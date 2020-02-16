@@ -5,4 +5,22 @@ date: '\today'
 output: pdf_document
 ---
 
-Hello World
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Motivation 
+```{r, child=c('1_motivation.Rmd')}
+```
+
+
+# Modeling Transitions
+
+## Defining States
+
+## State Transitions
+
+## Conditional Payment Modeling
+
+# Conclusions
+
