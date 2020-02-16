@@ -1,1 +1,10 @@
-This is the motivation section.
+The most common actuarial models used to develop unpaid claim estimates require the analysis of claim triangles. The ubiquitous use of triangles is natural as it provides a natural visualization of the movement of a _portfolio_ of claims. As such, both actuaries and non-actuaries (i.e., stakeholders) find the claim triangle understandable and, as a result, acceptable. 
+
+However, a claim triangle is "data-expensive." 
+
+* We require a point-in-time claim listing to construct each diagonal of claims triangle and we require several of these point-in-time listing evaluated at evenly-spaced intervals. That is, we need to _save_ significant amounts of data.
+
+* Then we _spend_ the data by aggregating the claim-listing by cohorts (such as accident year, report year or policy year).
+
+* We _give away_ all the features of the claim other than its maturity. 
+
