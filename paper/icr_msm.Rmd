@@ -2,7 +2,7 @@
 title:     |  
   <center> Individual Claim Reserving via Multi-state Models: </center>
   <center> A Case Study and Recipe </center>
-author: "Alexandra Taggar and Rajesh Sahasrabuddhe"
+author: "Alexandra Taggart and Rajesh Sahasrabuddhe"
 date: '\today'
 output: 
   pdf_document:
