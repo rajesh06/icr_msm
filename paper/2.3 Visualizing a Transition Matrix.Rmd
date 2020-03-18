@@ -1,0 +1,3 @@
+Visualizing a transition matrix
+Parhaps we think about supplementing the current design with a chart of
+'off-diagonal' movements.

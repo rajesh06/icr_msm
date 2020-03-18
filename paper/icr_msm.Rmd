@@ -1,26 +1,48 @@
 ---
-title: 'Individual Claim Reserving via Multi-state Models: A Case Study'
+title: 'Individual Claim Reserving via Multi-state Models: \n A Case Study and Recipe'
 author: "Alexandra Taggart and Rajesh Sahasrabuddhe"
 date: '\today'
-output: pdf_document
+output: 
+  pdf_document:
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Motivation 
-```{r, child=c('1_motivation.Rmd')}
+# Motivation and Introduction 
+```{r, child=c('1.0 Motivation and Introduction.Rmd')}
 ```
 
-
 # Modeling Transitions
+```{r, child=c('2.0 Modeling Transitions.Rmd')}
+```
 
 ## Defining States
+```{r, child=c('2.1 Defining States.Rmd')}
+```
 
-## State Transitions
+## Organizing Data
+```{r, child=c('2.2 Organizing Data.Rmd')}
+```
 
-## Conditional Payment Modeling
+## Visualizing a Transition Matrix
+```{r, child=c('2.3 Visualizing a Transition Matrix.Rmd')}
+```
+
+## Selecting Transition Probabilities
+```{r, child=c('2.4 Selecting Transition Probabilities.Rmd')}
+```
+
+## Simulation Results
+```{r, child=c('2.5 Simulation Results.Rmd')}
+```
+
+# Severity
+```{r, child=c('3.0 Conditional Severity.Rmd')}
+```
 
 # Conclusions
-
+```{r, child=c('4.0 Conclusions.Rmd')}
+```

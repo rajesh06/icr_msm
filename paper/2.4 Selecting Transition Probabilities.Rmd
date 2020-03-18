@@ -1,0 +1,2 @@
+Considerations for selecting transition probabilities.
+Also provide the code to create a markov-chain object.

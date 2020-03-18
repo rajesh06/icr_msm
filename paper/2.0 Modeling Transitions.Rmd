@@ -1,0 +1,1 @@
+This section will focus on state tarnsitions and the minimum outcome will be probability distrubution as to how claims close.

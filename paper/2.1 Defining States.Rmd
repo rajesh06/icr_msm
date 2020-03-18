@@ -1,0 +1,1 @@
+Discuss how the most basic states of "open" and "closed" and how model complexity increases as we refine states

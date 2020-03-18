@@ -1,0 +1,1 @@
+Suggest focusing on how to organize data to measure state transitions
