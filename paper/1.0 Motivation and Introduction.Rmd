@@ -8,3 +8,57 @@ However, a claim triangle is "data-expensive."
 
 * We _give away_ all the features of the claim other than its maturity. 
 
+In this paper, we will propose an approach that utilizes granular frequency and severity information to model ultimate values for claims. We do not present this paper as a treatise on all possible approach to modeling individual claims. Rather, our goal is present a practical approach (i.e., a recipe) accompanied by an `R` package that readers can use to execute the recipe. 
+
+Consistent with that goal our intent is to provide a fully reproducible "worked example" with this paper. To that end, we generate synthetic data using the [Simulation Engine](https://people.math.ethz.ch/~wmario/simulation.html) developed by Gabrielli and Wüthrich, M.V.[^1] (convert to bibliography for final)
+
+[^1]: Gabrielli, A., Wüthrich, M.V. (2018). Individual claims history simulation machine. SSRN Manuscript ID 3130560
+
+```{r echo=TRUE, eval=FALSE}
+#Not Run
+
+setwd("path.to/Simulation.Machine.V1")
+# total expected number of claims (over 12 accounting years)
+V <- 500 * 12 
+
+# categorical distribution for the allocation of the claims 
+# to the 4 lines of business
+LoB.dist <- c(1,0,0,0)    
+
+# growth parameters (per LoB) for the numbers of claims 
+#in the 12 accident years
+inflation <- c(0.01, 0.01, 0.01, 0.01)   
+
+seed1 <- 100                          # setting seed for simulation
+
+features <- Feature.Generation(V = V, LoB.dist = LoB.dist, inflation = 
+    inflation, seed1 = seed1)
+
+str(features)
+
+###############################################
+### Simulate (and store) cash flow patterns ###
+###############################################
+
+# blocks for parallel computing
+npb <- nrow(features)
+
+# setting seed for simulation
+seed1 <- 100                         
+
+# standard deviation parameter for total claim size simulation
+std1 <- 0.85                         
+
+# standard deviation parameter for recovery simulation
+std2 <- 0.85                         
+
+claims_data <- Simulation.Machine(features = features, npb = npb, 
+  seed1 = seed1, std1 = std1, std2 = std2)
+
+setwd("path.to/project/data")
+saveRDS(object = claims_data, file = './data/icr_data.RDS')
+```
+
+
+
+

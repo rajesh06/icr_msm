@@ -1,0 +1,14 @@
+---
+title: "Test Section Build"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Use this RMarkdown file to test the build of a single section.
+
+
+```{r, child=c('1.0 Motivation and Introduction.Rmd')}
+```
