@@ -1,3 +1,7 @@
 
 *.log
 *.pdf
+*.out
+*.md
+*.md
+*.aux

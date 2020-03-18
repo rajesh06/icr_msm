@@ -1,6 +1,8 @@
 ---
-title: 'Individual Claim Reserving via Multi-state Models: \n A Case Study and Recipe'
-author: "Alexandra Taggart and Rajesh Sahasrabuddhe"
+title:     |  
+  <center> Individual Claim Reserving via Multi-state Models: </center>
+  <center> A Case Study and Recipe </center>
+author: "Alexandra Taggar and Rajesh Sahasrabuddhe"
 date: '\today'
 output: 
   pdf_document:
