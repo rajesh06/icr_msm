@@ -1,1 +1,62 @@
-Suggest focusing on how to organize data to measure state transitions
+Using the synthetic data that was generated in Section 1 we will discuss how to organize the data in order to measure state transitions.
+
+First we compile our transition database by reading in the synthetic data. 
+
+```{r Read Data}
+synthetic_data <- readRDS(file = './data/icr_data.RDS')  #read the data
+```
+
+For each claim there are 8 features, clNr, LOB, cc, AY, AQ, age, and inj_part detailed below:
+
+clNr: Claim Number
+LoB: Line of business
+cc:Claim Code
+AY: Accident Year
+AQ: Accident Quarter
+age: Age of the Claimant
+inj_part: Body Part Injured
+RepDel: Reporting Delay
+
+The synthetic data then simulates a reporting delay for each individual claim up to a maximum of 11 years. This simulation occurs in fields "Open00" through "Open11" with a "1" indicating the claim is open at the corresponding lag and a "0" indicating hte claim is closed at the corresponding lag. Payments for each lag are also simulated in the fields "Pay00" through "Pay11".  
+
+To determine the transition matrices we will only need the claim number and the simulation fields. As discussed in Section 2.1, if you were to further refine the states you could include other fields such as age of the claimant or body part injured. 
+
+Our next step is to manipulate the data into a format that allows us to use the markovchain and msm packages to create our transition matrices. Our end goal is to have a database with 12 instances for each claim number (maturities 00 through 11) with indicators for whether they are open or closed and whether payments have been made. 
+Lastly, we need to define the data based on the states we decided on in Section 2.1 (oz, onz, cz, cnz).
+
+```{r Read Data}
+paid_data <- synthetic_data %>%  
+  dplyr::select(ClNr:RepDel, dplyr::starts_with('Pay')) %>% #keep IDs and payment amounts
+  tidyr::pivot_longer(cols = Pay00:Pay11, names_to = 'paid_as_of', #wide to long
+    values_to = 'paid') %>% 
+  dplyr::mutate(maturity = stringr::str_extract(string = paid_as_of, #extract maturity
+    pattern = '[0-9]{2}')) %>%
+  dplyr::group_by(ClNr) %>% mutate(cum_paid = cumsum(paid)) %>% #calculate cumulative payments
+  dplyr::select(-paid)
+  
+status_data <- synthetic_data %>%  #read the data
+  dplyr::select(ClNr:RepDel, dplyr::starts_with('Open')) %>% #keep IDs and status
+  tidyr::pivot_longer(cols = Open00:Open11, names_to = 'status_as_of', #wide to long
+    values_to = 'status') %>% 
+  dplyr::mutate(maturity = stringr::str_extract(string = status_as_of, #extract maturity
+    pattern = '[0-9]{2}'))
+
+markov_data <- dplyr::left_join(paid_data, status_data) %>% #join paid and status data
+  dplyr::select(- c(paid_as_of, status_as_of, LoB, age, cc, AY, 
+    AQ, inj_part, RepDel)) %>%  #remove fields not used
+  dplyr::mutate(maturity = as.numeric(maturity) + 1) %>% 
+  dplyr::arrange(ClNr, maturity) %>%
+  dplry::mutate(mc_status = case_when(
+      cum_paid == 0 & status == 1 ~ "oz", #open zero
+      cum_paid > 0 & status == 1 ~ "onz", #open non-zero
+      cum_paid == 0 & status == 0 ~ "cz", #closed zero
+      cum_paid > 0 & status == 0 ~ "cnz", #closed non-zero
+      TRUE ~ "NA"))
+  
+
+rm(paid_data, status_data, synthetic_data) #cleanup
+
+```
+
+The "markov_data" dataframe is now ready to be used to create our transition matrices.
+

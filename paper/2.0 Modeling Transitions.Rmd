@@ -1,1 +1,15 @@
-This section will focus on state transitions and the minimum outcome will be probability distribution as to how claims close.
+Section 2 will focus on state transitions for individual claims. Our model will track individual claim movements by age using Markov Transition Matrices. The model will answer the following two quesitons; when will the claim close and how will the claim close (i.e. close zero or close with value). We will use two R packages related to Markov matrices, "markovchain" and "msm" and an additional package which allows data manipulation "dplyr" which can be downloaded as follows:
+
+```{r install and load pacakges}
+install.packages("markovchain")
+install.package("msm")
+install.package("dplyr")
+
+library("markovchain")
+library("msm")
+library("dplyr")
+```
+
+***Add these to bibliography***
+
+This Section will be outlind in 5 steps; defining states, organizing data, visualizing a transition matrix, selecting transition probabilities, and simulation results. The ultimate outcome of this Section is to produce a probability distribution as to how claims close.
