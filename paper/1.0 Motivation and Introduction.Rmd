@@ -1,14 +1,14 @@
-The most common actuarial models used to develop unpaid claim estimates require the analysis of claim triangles. The ubiquitous use of triangles is natural as it provides a natural visualization of the movement of a _portfolio_ of claims. As such, both actuaries and non-actuaries (i.e., stakeholders) find the claim triangle understandable and, as a result, acceptable. 
+The most common actuarial models used to develop unpaid claim estimates require the analysis of claim triangles. The ubiquitous use of triangles is natural as it provides a pure visualization of the movement of a _portfolio_ of claims. As such, both actuaries and non-actuaries (i.e., stakeholders) find the claim triangle understandable and, as a result, acceptable. 
 
 However, a claim triangle is "data-expensive." 
 
-* We require a point-in-time claim listing to construct each diagonal of claims triangle and we require several of these point-in-time listing evaluated at evenly-spaced intervals. That is, we need to _save_ significant amounts of data.
+* We require a point-in-time claim listing to construct each diagonal of a claims triangle and we require several of these point-in-time listings evaluated at evenly-spaced intervals. That is, we need to _save_ significant amounts of data.
 
 * Then we _spend_ the data by aggregating the claim-listing by cohorts (such as accident year, report year or policy year).
 
 * We _give away_ all the features of the claim other than its maturity. 
 
-In this paper, we will propose an approach that utilizes granular frequency and severity information to model ultimate values for claims. This paper should not be read as a research paper as that is not the intent. We do not present this paper as a treatise on all possible approach to modeling individual claims. Rather, our goal is present a practical approach (i.e., a recipe) accompanied by an `R` package that readers can use to execute the recipe. 
+In this paper, we will propose an approach that utilizes granular frequency and severity information to model ultimate values for claims. This paper should not be read as a research paper as that is not the intent. We do not present this paper as a treatise on all possible approaches to modeling individual claims. Rather, our goal is to present a practical approach (i.e., a recipe) accompanied by an `R` package that readers can use to execute the recipe. 
 
 Consistent with that goal our intent is to provide a fully reproducible "worked example" with this paper. That is, we strive to present a _practical approach_ rather a theoretical approach. We also present and open-source the related code to encourage further development of this model. We also try to keep the "words" in the report to a minimum. This is intentional it will require you to the read the code which will improve your understanding of the model. We use `R` for this analysis; we assume that out code-based languages would also be able to efficiently execute this code. We think it would be difficult - but not impossible - to execute this model in Excel.
 

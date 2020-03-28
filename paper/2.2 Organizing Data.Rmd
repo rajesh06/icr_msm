@@ -1,1 +1,80 @@
-Suggest focusing on how to organize data to measure state transitions
+Using the synthetic data that was generated in Section 1 we will discuss how to organize the data in a way that allows us to measure state transitions.
+
+First we compile our transition database by reading in the synthetic data. 
+
+```{r echo=TRUE, eval=FALSE}
+synthetic_data <- readRDS(file = './data/icr_data.RDS')  #read the data
+
+```
+
+For each claim, the synthetic data includes 8 features which are detailed below:
+
+* clNr: Claim Number
+* LoB: Line of business
+* cc:Claim Code
+* AY: Accident Year
+* AQ: Accident Quarter
+* age: Age of the Claimant
+* inj_part: Body Part Injured
+* RepDel: Reporting Delay
+
+The synthetic data then simulates a settlement delay for each individual claim up to a maximum of 11 years. This simulation occurs in fields "Open00" through "Open11" with the value of "1" indicating the claim is open at the corresponding lag and the value of "0" indicating the claim is closed at the corresponding lag. Payments for each lag are also simulated in the fields "Pay00" through "Pay11".  
+
+To determine the transition matrices we will only need the claim number and the simulated fields ("Open00" through "Open11" and "Pay00 through Pay11"). As discussed in Section 2.1, if you were to further refine the states you could include other fields such as age of the claimant or body part injured and model the settlement lags separately based on those characteristics. 
+
+Now that we have a better understanding of the data we are ready to manipulate the data into a utilizable format which will enable us to create the Markov Transition Matrices. The objective is to transform the data into a database with 12 instances for each claim number (maturities 00 through 11) with indicators for whether the claim is open or closed and whether there is value at each maturity.
+
+We apply the states defined in Section 2.1 to our data (oz, onz, cz, cnz) in the code below.
+
+```{r echo=TRUE, eval=FALSE}
+paid_data <- synthetic_data %>%  
+  dplyr::select(ClNr:RepDel, dplyr::starts_with('Pay')) %>% #keep IDs and payment amounts
+  tidyr::pivot_longer(cols = Pay00:Pay11, names_to = 'paid_as_of', #wide to long
+    values_to = 'paid') %>% 
+  dplyr::mutate(maturity = stringr::str_extract(string = paid_as_of, #extract maturity
+    pattern = '[0-9]{2}')) %>%
+  dplyr::group_by(ClNr) %>% mutate(cum_paid = cumsum(paid)) %>% #calculate cumulative payments
+  dplyr::select(-paid)
+  
+status_data <- synthetic_data %>%  #read the data
+  dplyr::select(ClNr:RepDel, dplyr::starts_with('Open')) %>% #keep IDs and status
+  tidyr::pivot_longer(cols = Open00:Open11, names_to = 'status_as_of', #wide to long
+    values_to = 'status') %>% 
+  dplyr::mutate(maturity = stringr::str_extract(string = status_as_of, #extract maturity
+    pattern = '[0-9]{2}'))
+
+markov_data <- dplyr::left_join(paid_data, status_data) %>% #join paid and status data
+  dplyr::select(- c(paid_as_of, status_as_of, LoB, age, cc, AY, 
+    AQ, inj_part, RepDel)) %>%  #remove fields not used
+  dplyr::mutate(maturity = as.numeric(maturity) + 1) %>% 
+  dplyr::arrange(ClNr, maturity) %>%
+  dplyr::mutate(mc_status = case_when( #create markov states decided on in Section 2.1
+    cum_paid == 0 & status == 1 ~ "oz", #open zero
+    cum_paid > 0 & status == 1 ~ "onz", #open non-zero
+    cum_paid == 0 & status == 0 ~ "cz", #closed zero
+    cum_paid > 0 & status == 0 ~ "cnz", #closed non-zero
+    TRUE ~ "NA")) %>%
+  dplyr::mutate(
+    mc_subject = ClNr, #define variables for markovchain package
+    mat_ymyp1 = maturity) %>% 
+  dplyr::arrange(mc_subject, mat_ymyp1)
+
+transitions <- unique(markov_data$mat_ymyp1) %>% sort() #define trnasitions
+transitions <- transitions[1:length(transitions) - 1]
+
+markov_states <- c('oz', 'onz', 'cz', 'cnz') #definte states
+
+rm(paid_data, status_data) #cleanup
+
+```
+The "markov_data" dataframe is now ready to be used to create our Markov Transition Matrices. 
+
+Finally, we use the "mtms" function contained in the `R` package accompanying this paper to create a list of Markov Transition Matrices to be used in our simulation.
+
+```{r echo=TRUE, eval=FALSE}
+mtms <- lapply(X = transitions, # all available transitions,
+  mtms)
+
+```  
+
+
