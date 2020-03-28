@@ -1,0 +1,36 @@
+## Claims Closing without Additional Payment
+
+We first plot the percentage of claims that do not result in additional payment. We divide each closing lag into deciles and plot the rates. Note that the definition of decile is unique to each closing lag. As such, the lines are dont directly comparable. However, we note a general pattern of high rates for small claims and larger claims. The outying closing lags (1, 2, 9, 10, 11, and 12) display unusual behavior. We are not overly concerned about the late lag patterns as it will be unusual for a claim to simulate as closing in those late lags. 
+
+The patterns don't appear lend themselves to a parametric model. As a result, we elect to rely on an empirical model. 
+
+```{r Additional Payments}
+
+par(mfrow = c(3, 4))
+
+lapply(X = unique(sev_model$lag_to_close) %>% sort(), 
+  FUN = function(closing_lag){
+  #closing_lag <- 7
+  print(closing_lag)
+  
+  add_pay_model <- sev_model %>% 
+    dplyr::ungroup() %>% #ntile doesnt work on grouped_date
+    dplyr::filter(lag_to_close == closing_lag) %>% 
+    dplyr::mutate(add_pay = ultimate > cum_paid) %>% 
+    dplyr::mutate(size_cat = dplyr::ntile(x = cum_paid, n = 10)) %>%  
+    dplyr::group_by(lag_to_close, size_cat) %>% 
+    dplyr::summarise(add_pay_rate = mean(add_pay))
+  
+  plot(x = 1:10, # deciles
+    y = 1:10 * 0.10 - 0.05, 
+    ylim = c(0,1), type = 'n', ylab = "Addional Payment Rate", 
+    main = paste('Closing Lag = ', closing_lag) )
+  
+  lines(x = add_pay_model$size_cat, y = add_pay_model$add_pay_rate, type = 'b')
+  }) %>% invisible()
+  
+  
+```
+  
+
+  

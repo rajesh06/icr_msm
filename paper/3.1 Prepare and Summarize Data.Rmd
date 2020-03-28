@@ -24,6 +24,7 @@ model_data <- dplyr::left_join(paid_data, status_data) %>%  #combine data
   dplyr::mutate(last_open = maturity * status) %>%
   dplyr::group_by(ClNr) %>% 
   dplyr::mutate(ultimate = sum(paid)) %>% 
+  dplyr::filter(ultimate > 0) %>% 
   dplyr::mutate(closed_at = max(last_open) + 1) %>% 
   dplyr::mutate(cum_paid = cumsum(paid)) %>% 
   dplyr::select(-AQ, -cc, -inj_part, -LoB, -last_open) 

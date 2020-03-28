@@ -19,7 +19,7 @@ We then plot the relationship of settlement values to paid values prior to settl
 ```{r}
 severity_eda <- function(df){
   
-  lapply(X = unique(df$lag_to_close), FUN = function(closing_lag){
+  lapply(X = unique(df$lag_to_close) %>% sort(), FUN = function(closing_lag){
     #closing_lag <- 1
     
     plot_data <- df %>% 
@@ -39,9 +39,7 @@ severity_eda(df = sev_model) %>% invisible() #don't print to console
 ```
 Our initial observation related to this data are as follows:
 
-* There are certain claims that do not result in any additional payment. We see included the 45$^\circ$ line on the plots to highlight these claims. 
+* There are certain claims that do not result in any additional payment. We included the 45$^\circ$ line on the plots to highlight these claims. 
 * We also observe that the number of claims with this characteristic decreases as the closing lag increases. This is intuitive.
-* We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon.
-
-
+* We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon. We explore this issue first in the next section.
 

@@ -5,3 +5,6 @@
 
 ```{r, child=c('3.2 Severity EDA.Rmd')}
 ```
+
+```{r, child=c('3.3 Pr Additional Payment.Rmd')}
+```
