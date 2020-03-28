@@ -8,9 +8,13 @@ However, a claim triangle is "data-expensive."
 
 * We _give away_ all the features of the claim other than its maturity. 
 
-In this paper, we will propose an approach that utilizes granular frequency and severity information to model ultimate values for claims. We do not present this paper as a treatise on all possible approach to modeling individual claims. Rather, our goal is present a practical approach (i.e., a recipe) accompanied by an `R` package that readers can use to execute the recipe. 
+In this paper, we will propose an approach that utilizes granular frequency and severity information to model ultimate values for claims. This paper should not be read as a research paper as that is not the intent. We do not present this paper as a treatise on all possible approach to modeling individual claims. Rather, our goal is present a practical approach (i.e., a recipe) accompanied by an `R` package that readers can use to execute the recipe. 
 
-Consistent with that goal our intent is to provide a fully reproducible "worked example" with this paper. To that end, we generate synthetic data using the [Simulation Engine](https://people.math.ethz.ch/~wmario/simulation.html) developed by Gabrielli and Wüthrich, M.V.[^1] (convert to bibliography for final)
+Consistent with that goal our intent is to provide a fully reproducible "worked example" with this paper. That is, we strive to present a _practical approach_ rather a theoretical approach. We also present and open-source the related code to encourage further development of this model.
+
+To that end, we generate synthetic data using the [Simulation Engine](https://people.math.ethz.ch/~wmario/simulation.html) developed by Gabrielli and Wüthrich, M.V.[^1] (convert to bibliography for final) 
+
+This data does not include incurred values. As a result, we present a paid development model. Application to incurred data would be analogous to the application presented in this paper. The primary difference is that incurred information would allow for the consideration of additional variables such as case reserves and paid to incurred ratios.
 
 [^1]: Gabrielli, A., Wüthrich, M.V. (2018). Individual claims history simulation machine. SSRN Manuscript ID 3130560
 

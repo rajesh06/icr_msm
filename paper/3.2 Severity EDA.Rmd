@@ -1,0 +1,47 @@
+## Exploratory Data Analysis: Severity
+Our synthetic data includes claims values through to settlement. In practice, we would have access to data through a particular valuation date. 
+
+* To develop the claims settlement model, we only require a minimum of two valuations. 
+* To develop this severity model, we would need to data that captured all possible severity lags. In practice, we have noted that as the data becomes thinner for later segment lags, we tend group later settlement lags so that we have a sufficient volume of data for our model.
+
+We delete observations post settlement. These observations are not relevant to our model.
+
+```{r}
+sev_model <- model_data %>% 
+  dplyr::filter(maturity < closed_at) %>% 
+  dplyr::mutate(lag_to_close = closed_at - maturity)
+```
+
+We then plot the relationship of settlement values to paid values prior to settlement. In practice, we have observed that use logarithms[^1] of claim values improved the modeling. We create a function to present the exploratory data analysis. (We use a function as we will later test compare to the complete data set.)
+
+[^1]: Note that we use the `log` function in `R` which represents the natural logarithm. Excel uses `ln` to represent the natural logarithm while `log` computes the base 10 logarithm.
+
+```{r}
+severity_eda <- function(df){
+  
+  lapply(X = unique(df$lag_to_close), FUN = function(closing_lag){
+    #closing_lag <- 1
+    
+    plot_data <- df %>% 
+      dplyr::filter(lag_to_close == closing_lag)
+    
+    plot(x = log(plot_data$cum_paid), xlab = 'log(claims_paid)',
+      y = log(plot_data$ultimate), ylab = 'log(setttelement value)',
+      main = paste('Closing Lag = ', closing_lag))
+    lines(x = plot_data$cum_paid, y = plot_data$cum_paid, col = 'red')
+    
+    legend('bottomright', legend = c('No Additional Payments'), col = 'red',
+      bty = 'n', lty = 'solid')
+  })
+}
+
+severity_eda(df = sev_model) %>% invisible() #don't print to console
+```
+Our initial observation related to this data are as follows:
+
+* There are certain claims that do not result in any additional payment. We see included the 45$^\circ$ line on the plots to highlight these claims. 
+* We also observe that the number of claims with this characteristic decreases as the closing lag increases. This is intuitive.
+* We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon.
+
+
+
