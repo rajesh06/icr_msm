@@ -1,3 +1,10 @@
 Visualizing a transition matrix
 Parhaps we think about supplementing the current design with a chart of
 'off-diagonal' movements.
+
+
+ggplot(markov_data, aes(fill=condition, y=value, x=specie)) + 
+    geom_bar(position="dodge", stat="identity")
+
+
+

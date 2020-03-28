@@ -1,15 +1,21 @@
-Section 2 will focus on state transitions for individual claims. Our model will track individual claim movements by age using Markov Transition Matrices. The model will answer the following two quesitons; when will the claim close and how will the claim close (i.e. close zero or close with value). We will use two R packages related to Markov matrices, "markovchain" and "msm" and an additional package which allows data manipulation "dplyr" which can be downloaded as follows:
+Section 2 of this paper will begin our "worked example" by focusing on state transitions for individual claims. Our model will track individual claim movements by age using Markov Transition Matrices. At the end of Section 2 we will be able to answer the following two questions; when will each individual claim close and how will each individual claim close (i.e. close zero or close with value). In order to run our model we will use the following `R` packages (need to add these packages to bibliogrpahy) which can be downloaded as follows:
 
-```{r install and load pacakges}
-install.packages("markovchain")
-install.package("msm")
-install.package("dplyr")
+```{r echo=TRUE, eval=FALSE}
+install.packages("easypackages") #allows you to install and load multiple packages at once
+library("easypackages")
 
-library("markovchain")
-library("msm")
-library("dplyr")
+packages("markovchain", "msm", "dplyr", "ggplot2", "gridExtra")
+
+libraries("markovchain", "msm", "dplyr", "ggplot2", "gridExtra")
 ```
 
-***Add these to bibliography***
+**turn this into package rather than multiple functions**
+```{r echo=FALSE, eval=FALSE}
+source(here::here('functions/square_mats.R'))
+source(here::here('functions/plot_mtm.R'))
+source(here::here('functions/update_mtm_selection.R'))
+source(here::here('functions/mtms.R'))
+source(here::here('functions/open_sim.R'))
+```
 
-This Section will be outlind in 5 steps; defining states, organizing data, visualizing a transition matrix, selecting transition probabilities, and simulation results. The ultimate outcome of this Section is to produce a probability distribution as to how claims close.
+This Section will be organized in the following sub sections; defining states, organizing data, visualizing a transition matrix, selecting transition probabilities, and simulation results. The end result of this section will be the production of a probability distribution as to when and how claims close that is used to simulate the closing distribution individual for all open claims.
