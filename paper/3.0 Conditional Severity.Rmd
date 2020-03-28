@@ -1,30 +1,10 @@
-```{r Read Data}
-paid_data <- readRDS(file = './data/icr_data.RDS') %>%  #read the data
-  dplyr::select(ClNr:RepDel, dplyr::starts_with('Pay')) %>% #keep IDs and payment amounts
-  tidyr::pivot_longer(cols = Pay00:Pay11, names_to = 'paid_as_of', #wide to long
-    values_to = 'paid') %>% 
-  dplyr::mutate(maturity = stringr::str_extract(string = paid_as_of, #extract maturity
-    pattern = '[0-9]{2}'))
-  
-status_data <- readRDS(file = './data/icr_data.RDS') %>%  #read the data
-  dplyr::select(ClNr:RepDel, dplyr::starts_with('Open')) %>% #keep IDs and status
-  tidyr::pivot_longer(cols = Open00:Open11, names_to = 'status_as_of', #wide to long
-    values_to = 'status') %>% 
-  dplyr::mutate(maturity = stringr::str_extract(string = status_as_of, #extract maturity
-    pattern = '[0-9]{2}'))
+## Conditional Severity Model
 
-model_data <- dplyr::left_join(paid_data, status_data) %>% 
-  dplyr::select(-paid_as_of, -status_as_of) %>% 
-  dplyr::mutate(maturity = as.numeric(maturity) + 1) %>% 
-  dplyr::arrange(ClNr, maturity) %>% 
-  dplyr::mutate(last_open = maturity * status) %>%
-  dplyr::group_by(ClNr) %>% 
-  dplyr::mutate(ultimate = sum(paid)) %>% 
-  dplyr::mutate(closed_at = max(last_open)) %>% 
-  dplyr::mutate(cum_paid = cumsum(paid)) %>% 
-  dplyr::filter(ClNr == 36 | ClNr == 2)
-
-rm(paid_data, status_data)
-
+```{r, child=c('3.1 Prepare and Summarize Data.Rmd')}
 ```
 
+```{r, child=c('3.2 Severity EDA.Rmd')}
+```
+
+```{r, child=c('3.3 Pr Additional Payment.Rmd')}
+```
