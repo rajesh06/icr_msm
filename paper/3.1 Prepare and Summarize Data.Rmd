@@ -21,17 +21,21 @@ model_data <- dplyr::left_join(paid_data, status_data) %>%  #combine data
   dplyr::select(-paid_as_of, -status_as_of) %>% # drop variables not needed
   dplyr::mutate(maturity = as.numeric(maturity) + 1) %>% # calculate maturity
   dplyr::arrange(ClNr, maturity) %>% 
-  dplyr::mutate(last_open = maturity * status) %>%
+  dplyr::mutate(last_open = maturity * status) %>% #This in an intermediate step
   dplyr::group_by(ClNr) %>% 
   dplyr::mutate(ultimate = sum(paid)) %>% 
   dplyr::filter(ultimate > 0) %>% 
   dplyr::mutate(closed_at = max(last_open) + 1) %>% 
   dplyr::mutate(cum_paid = cumsum(paid)) %>% 
-  dplyr::select(-AQ, -cc, -inj_part, -LoB, -last_open) 
+  dplyr::select(-AQ, -cc, -inj_part, -LoB, -last_open, -age) %>% 
     #Drop unnecessary variables
       #AQ is the quarter of claims occurrence
       #cc is the claims code
       #inj_part is the body part injured 
+      #age is the age of the claimant
+  dplyr::mutate(lag_to_close = closed_at - maturity) %>% 
+  dplyr::ungroup() 
+
 
 rm(paid_data, status_data)
 

@@ -6,17 +6,17 @@ Our synthetic data includes claims values through to settlement. In practice, we
 
 We delete observations post settlement. These observations are not relevant to our model.
 
-```{r}
+```{r severity model data}
 sev_model <- model_data %>% 
-  dplyr::filter(maturity < closed_at) %>% 
-  dplyr::mutate(lag_to_close = closed_at - maturity)
+  dplyr::filter(maturity < closed_at)
+  
 ```
 
 We then plot the relationship of settlement values to paid values prior to settlement. In practice, we have observed that use logarithms[^1] of claim values improved the modeling. We create a function to present the exploratory data analysis. (We use a function as we will later test compare to the complete data set.)
 
 [^1]: Note that we use the `log` function in `R` which represents the natural logarithm. Excel uses `ln` to represent the natural logarithm while `log` computes the base 10 logarithm.
 
-```{r}
+```{r severity eda}
 severity_eda <- function(df){
   
   lapply(X = unique(df$lag_to_close) %>% sort(), FUN = function(closing_lag){
@@ -32,14 +32,32 @@ severity_eda <- function(df){
     
     legend('bottomright', legend = c('No Additional Payments'), col = 'red',
       bty = 'n', lty = 'solid')
-  })
+  
+    }) %>% invisible()
 }
 
-severity_eda(df = sev_model) %>% invisible() #don't print to console
+severity_eda(df = sev_model)  #don't print to console
 ```
+As the focus of this paper is the approach to individual claims reserving, we won't focus on the severity model itself. Rather, we summarize serveral features of the data that our model will need to address. 
+
 Our initial observation related to this data are as follows:
 
 * There are certain claims that do not result in any additional payment. We included the 45$^\circ$ line on the plots to highlight these claims. 
-* We also observe that the number of claims with this characteristic decreases as the closing lag increases. This is intuitive.
-* We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon. We explore this issue first in the next section.
 
+  * We also observe that the number of claims with this characteristic decreases as the closing lag increases. This is intuitive.
+  
+  * We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon. We explore this issue first in the next section.
+
+* There are claims that are not on the 45$^\circ$ line that has additional payments.
+
+* We are aware that there are claims valued at 0 that ultimately closed with payment. As such, we need to include models for each of these potential claim outcomes.
+
+For now, we create a data frame that we will use to store each of these component models.
+
+```{r severity model data frame}
+severity_model_df <- tibble::tibble(
+  lag_to_close = unique(sev_model$lag_to_close) %>% sort())
+```
+
+
+We are going to settup 

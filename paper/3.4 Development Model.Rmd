@@ -1,0 +1,68 @@
+We can now turn our attention to the development model. We first create our analysis data by filtering out claims that do not develop. 
+
+
+```{r}
+dev_model <- model_data %>% 
+  dplyr::filter(ultimate > cum_paid) %>% 
+  dplyr::filter(cum_paid > 0)
+
+```
+
+Now we perform exploratory data analysis
+
+
+```{r}
+lapply(X = unique(dev_model$lag_to_close) %>% sort(), 
+  FUN = function(closing_lag){
+    
+    plot_data <- dev_model %>% 
+      dplyr::filter(lag_to_close == closing_lag) #for loop
+    
+    
+    plot(x = log(plot_data$cum_paid), xlab = 'log(claims_paid)',
+      y = log(plot_data$ultimate), ylab = 'log(setttelement value)',
+      main = paste('Closing Lag = ', closing_lag))
+    
+    lines(x = plot_data$cum_paid, y = plot_data$cum_paid, col = 'red')
+    
+  }) %>% invisible()
+```
+
+Our principal observation is that the the variance of the errors seems to increases with the mean until we (approximately) reach a paid value or `exp(10)` (`R scales::comma(exp(10))`). We therefore elect to fit a glm to the with a gamma error distribution to claims with initial value less than `R scales::comma(exp(10))` and separate linear model to claims greater than 10.
+
+For brevity, we will 
+
+```{r}
+
+plot_data <- dev_model %>% 
+  dplyr::filter(lag_to_close == 2) %>% 
+  dplyr::mutate(x_var = log(cum_paid), y_var = log(ultimate))
+
+
+plot(x = plot_data$x_var, xlab = 'log(claims_paid)',
+  y = plot_data$y_var, ylab = 'log(setttelement value)',
+  main = paste('Closing Lag = ', 2))
+
+lines(x = plot_data$x_var, y = plot_data$x_var, col = 'red')
+abline(v = 10, col = 'red')
+
+sev_model_lt10 <- glm(formula = y_var ~ x_var,
+  data = plot_data, family = Gamma(link = 'identity'), 
+  subset = x_var < 10)
+
+predict_y = predict(object = sev_model_lt10)
+
+points(x = plot_data$x_var[plot_data$x_var < 10], 
+  y = predict(object = sev_model_lt10), col = 'blue', type = 'l')
+
+
+```
+
+
+* 
+
+
+
+
+
+

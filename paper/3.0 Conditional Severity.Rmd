@@ -8,3 +8,7 @@
 
 ```{r, child=c('3.3 Pr Additional Payment.Rmd')}
 ```
+
+
+```{r, child=c('3.4 Development Model.Rmd')}
+```
