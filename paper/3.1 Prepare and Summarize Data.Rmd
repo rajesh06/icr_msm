@@ -36,7 +36,6 @@ model_data <- dplyr::left_join(paid_data, status_data) %>%  #combine data
   dplyr::mutate(lag_to_close = closed_at - maturity) %>% 
   dplyr::ungroup() 
 
-
 rm(paid_data, status_data)
 
 ```

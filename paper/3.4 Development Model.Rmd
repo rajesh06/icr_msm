@@ -1,10 +1,12 @@
-We can now turn our attention to the development model. We first create our analysis data by filtering out claims that do not develop. 
-
+We can now turn our attention to the development model. We first create our analysis data by filtering out claims that do not develop. We also only work with development on non-zero claims.
 
 ```{r}
-dev_model <- model_data %>% 
+nz_dev_model <- model_data %>% 
   dplyr::filter(ultimate > cum_paid) %>% 
   dplyr::filter(cum_paid > 0)
+
+nz_closing_lags <-  unique(nz_dev_model$lag_to_close) %>% sort()
+
 
 ```
 
@@ -12,54 +14,79 @@ Now we perform exploratory data analysis
 
 
 ```{r}
-lapply(X = unique(dev_model$lag_to_close) %>% sort(), 
-  FUN = function(closing_lag){
-    
-    plot_data <- dev_model %>% 
-      dplyr::filter(lag_to_close == closing_lag) #for loop
-    
-    
-    plot(x = log(plot_data$cum_paid), xlab = 'log(claims_paid)',
-      y = log(plot_data$ultimate), ylab = 'log(setttelement value)',
-      main = paste('Closing Lag = ', closing_lag))
-    
-    lines(x = plot_data$cum_paid, y = plot_data$cum_paid, col = 'red')
-    
-  }) %>% invisible()
+lapply(X = nz_closing_lags, FUN = function(closing_lag){
+  
+  plot_data <- nz_dev_model %>% 
+    dplyr::filter(lag_to_close == closing_lag) #for loop
+  
+  
+  plot(x = log(plot_data$cum_paid), xlab = 'log(claims_paid)',
+    y = log(plot_data$ultimate), ylab = 'log(setttelement value)',
+    main = paste('Closing Lag = ', closing_lag))
+  
+  lines(x = plot_data$cum_paid, y = plot_data$cum_paid, col = 'red')
+  
+}) %>% invisible()
 ```
 
-Our principal observation is that the the variance of the errors seems to increases with the mean until we (approximately) reach a paid value or `exp(10)` (`R scales::comma(exp(10))`). We therefore elect to fit a glm to the with a gamma error distribution to claims with initial value less than `R scales::comma(exp(10))` and separate linear model to claims greater than 10.
+Our principal observation is that the the variance of the errors seems to increases with the mean until we (approximately) reach a paid value of `exp(10)` (`R scales::comma(exp(10))`). We therefore elect to fit a `glm` to the with a gamma error distribution to claims with initial value less than `R scales::comma(exp(10))` and separate linear model to claims greater than 10.
 
-For brevity, we will 
+For brevity, we will only present the model for claiming lag 2.
 
 ```{r}
 
-plot_data <- dev_model %>% 
-  dplyr::filter(lag_to_close == 2) %>% 
-  dplyr::mutate(x_var = log(cum_paid), y_var = log(ultimate))
+plot_data <- nz_dev_model %>% 
+  dplyr::filter(lag_to_close == 2)  
 
-
-plot(x = plot_data$x_var, xlab = 'log(claims_paid)',
-  y = plot_data$y_var, ylab = 'log(setttelement value)',
+plot(x = log(plot_data$cum_paid), xlab = 'log(claims_paid)',
+  y = log(plot_data$ultimate), ylab = 'log(setttelement value)',
   main = paste('Closing Lag = ', 2))
 
-lines(x = plot_data$x_var, y = plot_data$x_var, col = 'red')
+lines(x = log(plot_data$cum_paid), y = log(plot_data$cum_paid), col = 'red')
 abline(v = 10, col = 'red')
 
-sev_model_lt10 <- glm(formula = y_var ~ x_var,
+sev_model_lt10 <- glm(formula = log(ultimate) ~ log(cum_paid),
   data = plot_data, family = Gamma(link = 'identity'), 
-  subset = x_var < 10)
+  subset = log(cum_paid) < 10)
 
-predict_y = predict(object = sev_model_lt10)
-
-points(x = plot_data$x_var[plot_data$x_var < 10], 
+points(x = log(plot_data$cum_paid)[log(plot_data$cum_paid) < 10], 
   y = predict(object = sev_model_lt10), col = 'blue', type = 'l')
 
+sev_model_gt10 <- lm(formula = log(ultimate) ~ log(cum_paid),
+  data = plot_data, subset = log(cum_paid) >= 10)
+
+points(x = log(plot_data$cum_paid)[log(plot_data$cum_paid) >= 10], 
+  y = predict(object = sev_model_gt10), col = 'green', type = 'l')
 
 ```
 
+```{r}
+nz_lt_10 <- lapply(X = nz_closing_lags, FUN = function(closing_lag){
+  
+  model_data <- nz_dev_model %>% 
+    dplyr::filter(lag_to_close == closing_lag)  
+  
+  sev_model_lt10 <- glm(formula = log(ultimate) ~ log(cum_paid),
+    data = model_data, family = Gamma(link = 'identity'), 
+    subset = log(cum_paid) < 10)
+}) %>% invisible()
 
-* 
+severity_model_df$nz_lt_10 <- nz_lt_10
+
+
+nz_gt_10 <- lapply(X = nz_closing_lags, FUN = function(closing_lag){
+  
+  model_data <- nz_dev_model %>% 
+    dplyr::filter(lag_to_close == closing_lag)  
+  
+  lm(formula = log(ultimate) ~ log(cum_paid),
+    data = model_data, subset = log(cum_paid) >= 10)
+  
+}) %>% invisible()
+
+severity_model_df$nz_gt_10 <- nz_gt_10
+```
+
 
 
 

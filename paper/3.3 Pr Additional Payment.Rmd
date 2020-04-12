@@ -33,6 +33,7 @@ closed_at_current <- lapply(X = severity_model_df$lag_to_close,
 
 severity_model_df <- severity_model_df %>% 
   dplyr::mutate(no_add_pay = closed_at_current)
+rm(closed_at_current)
 
 ```
 
