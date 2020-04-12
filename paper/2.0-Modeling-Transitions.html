@@ -365,6 +365,8 @@ summary {
 </div>
 
 
+<div id="modeling-transitions" class="section level1">
+<h1>Modeling Transitions</h1>
 <p>Section 2 of this paper will begin our “worked example” by focusing on state transitions for individual claims. Our model will track individual claim movements by age using Markov Transition Matrices. At the end of Section 2 we will be able to answer the following two questions; when will each individual claim close and how will each individual claim close (i.e. close zero or close with value). In order to run our model we will use the following <code>R</code> packages (need to add these packages to bibliogrpahy) which can be downloaded as follows:</p>
 <pre class="r"><code>install.packages(&quot;easypackages&quot;) #allows you to install and load multiple packages at once
 library(&quot;easypackages&quot;)
@@ -374,6 +376,7 @@ packages(&quot;markovchain&quot;, &quot;msm&quot;, &quot;dplyr&quot;, &quot;ggpl
 libraries(&quot;markovchain&quot;, &quot;msm&quot;, &quot;dplyr&quot;, &quot;ggplot2&quot;, &quot;gridExtra&quot;)</code></pre>
 <p><strong>turn this into package rather than multiple functions</strong></p>
 <p>This Section will be organized in the following sub sections; defining states, organizing data, visualizing a transition matrix, selecting transition probabilities, and simulation results. The end result of this section will be the production of a probability distribution as to when and how claims close that is used to simulate the closing distribution individual for all open claims.</p>
+</div>
 
 
 

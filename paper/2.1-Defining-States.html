@@ -365,6 +365,8 @@ summary {
 </div>
 
 
+<div id="defining-states" class="section level2">
+<h2>Defining States</h2>
 <p>The most basic states of a claim are “open” and “closed”. For purposes of our case study we further refined our model to include the following four states:</p>
 <ul>
 <li>Open Zero (oz): open with no value</li>
@@ -374,6 +376,7 @@ summary {
 </ul>
 <p>This refinement allows us to answer the “how” by observing if the claim closes with or without value. As a note, the synthetic data we created only includes payments and not incurred values. Using this in practice, the “with value” would relate to incurred value on open claims rather than payments.</p>
 <p>Our case study is a rather simplistic approach to defining transition states. There are countless ways to define these states, for example, we could introduce a threshold such as 500 thousand of value. We would then have three open states; open zero, open with value less than 500 thousand, and open with value greater than or equal to 500 thousand. Other examples include incorporating paid to incurred ratios or “type” of claim (i.e. observation, claim or suit). As we further refine the states used in the model, the model complexity will increase. For applications of this model outside of this case study the defining of states will depend on the ultimate goal of the model and the indicators available in the data.</p>
+</div>
 
 
 

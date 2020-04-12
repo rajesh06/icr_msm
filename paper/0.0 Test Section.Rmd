@@ -1,15 +1,27 @@
 ---
-title: "Test Section Build"
-output: pdf_document
+title: "Individual Claim Reserving Using Multi-State Models"
+author: "Alexandra Taggart and Rajesh Sahasrabuddhe"
+date: \today
+output: 
+  pdf_document:
+    number_sections: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Use this RMarkdown file to test the build of a single section.
-Use this if you want to see the pdf. You can always knit the individual file into html.
-
-
-```{r, child=c('1.0 Motivation and Introduction.Rmd')}
+```{r, child=c('1.0 Preliminaries.Rmd')}
 ```
+
+```{r, child=c('2.0 Modeling Transitions.Rmd')}
+```
+
+```{r, child=c('2.1 Defining States.Rmd')}
+```
+
+```{r, child=c('2.2 Organizing Data.Rmd')}
+```
+
+# ```{r, child=c('2.4 Selecting Transition Probabilities.Rmd')}
+#```
