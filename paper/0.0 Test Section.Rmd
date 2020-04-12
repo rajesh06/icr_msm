@@ -23,5 +23,5 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, child=c('2.2 Organizing Data.Rmd')}
 ```
 
-# ```{r, child=c('2.4 Selecting Transition Probabilities.Rmd')}
-#```
+```{r, child=c('2.4 Selecting Transition Probabilities.Rmd')}
+```

@@ -10,17 +10,17 @@ plot_mtm <- function(transition_start){
   }
   
   p_observed <- ggplot(data = observed_dat,
-    mapping = aes(x = to, y = from))+
+    mapping = aes(x = to, y = from)) +
     geom_tile(mapping = aes(fill = n), 
-      show.legend = FALSE)+
-    xlab('Ending State')+ylab('Starting State')+
-    theme_bw()+
+      show.legend = FALSE) +
+    xlab('Ending State') + ylab('Starting State')+
+    theme_bw() +
     scale_fill_gradient(low = 'white', 
-      high = 'blue4')+
+      high = 'blue4') +
     geom_text(mapping = aes(label = 
         ifelse(round(n, digits = 2) == 0, "", 
-          round(n, digits = 2))), size = 3)+
-    ggtitle('Observed')+
+          round(n, digits = 2))), size = 3) +
+    ggtitle('Observed') +
     theme(axis.text.x = element_text(angle = 90, vjust = 0), 
       panel.grid = element_blank(),
       axis.text.y = element_text(hjust = 1, vjust = 0.35))
@@ -33,22 +33,23 @@ plot_mtm <- function(transition_start){
   }
   
   p_selected <- ggplot(data = selected_dat,
-    mapping = aes(x = to, y = from))+
+    mapping = aes(x = to, y = from)) +
     geom_tile(mapping = aes(fill = n), show.legend = FALSE)+
-    xlab('Ending State')+ylab('Starting State')+
-    theme_bw()+
+    xlab('Ending State') + ylab('Starting State') +
+    theme_bw() +
     scale_fill_gradient(low = 'white', 
-      high = 'blue4')+
+      high = 'blue4') +
     geom_text(mapping = aes(label = 
         ifelse(round(n, digits = 2) == 0, "", 
-          round(n, digits = 2))), size = 3)+
-    ggtitle('Selected')+
+          round(n, digits = 2))), size = 3) +
+    ggtitle('Selected') +
     theme(axis.text.x = element_text(angle = 90, vjust = 0),
       panel.grid = element_blank(),
       axis.text.y = element_text(hjust = 1, vjust = 0.35))
   
   plots <- arrangeGrob(ncol = 2, p_observed, p_selected)
-    
+  
+  plot(plots)
   return(plots)
   
 }
