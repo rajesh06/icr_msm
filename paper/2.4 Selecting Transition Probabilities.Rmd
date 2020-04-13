@@ -116,9 +116,9 @@ We visualize the matrices by creating a "for" loop for all of the transitions in
 for(i in 1:length(mtms)) {
   plot_mtm(i)}
 
-plot(plot_mtm('terminal'))
+plot_mtm('terminal')
 #dev.off()
 
-rm(t_plot, term_mat, zero_mat, i, markov_states, transitions) #cleanup
+rm(term_mat, zero_mat, i, markov_states, transitions) #cleanup
 
 ```

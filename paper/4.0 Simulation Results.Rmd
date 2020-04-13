@@ -1,0 +1,97 @@
+# Applying the Model
+
+We now have all the component models to develop our estimates. We start by generating generating test data. We use the same approach as we used to generate the model used to parameterize the model with the exception of the simulation seed.
+
+We then "cutoff" the data so that we only have information trough a particular valuation date. (We use the same code that we presented in Section 2.2 except to applying an additional filter to exclude any observations valued after year-end 2005).
+
+```{r echo=FALSE}
+test_data <- readRDS(file = './data/test_data.RDS')
+
+paid_data <- test_data %>%  
+  dplyr::select(ClNr:RepDel, dplyr::starts_with('Pay')) %>% #keep IDs and payment amounts
+  tidyr::pivot_longer(cols = Pay00:Pay11, names_to = 'paid_as_of', #wide to long
+    values_to = 'paid') %>% 
+  dplyr::mutate(maturity = stringr::str_extract(string = paid_as_of, #extract maturity
+    pattern = '[0-9]{2}')) %>%
+  #calculate cumulative payments
+  dplyr::group_by(ClNr) %>% mutate(cum_paid = cumsum(paid)) %>% 
+  dplyr::select(-paid)
+
+status_data <- test_data %>%  #read the data
+  dplyr::select(ClNr:RepDel, dplyr::starts_with('Open')) %>% #keep IDs and status
+  tidyr::pivot_longer(cols = Open00:Open11, names_to = 'status_as_of', #wide to long
+    values_to = 'status') %>% 
+  dplyr::mutate(maturity = stringr::str_extract(string = status_as_of, #extract maturity
+    pattern = '[0-9]{2}'))
+
+test_data_2005 <- dplyr::left_join(paid_data, status_data) %>% #join paid and status data
+  dplyr::select(-c(paid_as_of, status_as_of, LoB, age, cc, AQ, inj_part, RepDel)) %>%  #remove fields not used
+  dplyr::mutate(maturity = as.numeric(maturity) + 1) %>% 
+  dplyr::mutate(val_year = AY + maturity - 1) %>% 
+  dplyr::filter(val_year <= 2005)
+
+rm(paid_data, status_data) #cleanup
+
+table(test_data_2005$AY, test_data_2005$maturity)
+
+val_2005 <- test_data_2005 %>% 
+  dplyr::filter(val_year == 2005)
+table(val_2005$AY, val_2005$status)
+
+```
+
+Section 2.5 discusses using the Markov Transition Matrices created to generate a simulation on all open claims in the modeled data. The end result of this simulation gives us the when and how (with our without value) each open claim is simulated to close.
+
+To start we need to create our database of open claims. The code below is specifically related to the data we are using, there will be differences in the code depending on the data that is being modeled. The important fields to generate are `mtm_code`, and `mtm_code_with_mat` as these fields will be passed through the functions of the `R` package.
+
+```{r echo=TRUE, eval=FALSE}
+
+open_claims <- val_2005 %>%
+  dplyr::filter(status == 1) %>% #remove fields not used
+  dplyr::filter(AY > 1994) %>%  # 1994 is at ultimate
+  dplyr::mutate(mtm_code = case_when(
+    cum_paid == 0 ~ "oz",
+    cum_paid > 0 ~ "onz")) %>% #assign mtm_code
+  dplyr::mutate(
+    mtm_code_with_mat = paste(mtm_code, maturity, sep = '_'))
+
+```
+
+Now that we have our open claims database we can run it through our simulation model. The first step is to convert the matrices to have a class that functions with the markovchain package.
+
+```{r echo=TRUE, eval=FALSE}
+#convert the selection matrices to class = Markov Chain
+mtm_selections <- lapply(mtm_selections, function(x){
+  as(object = x, Class = "markovchain")
+})
+
+```
+
+Next, we use the function `open_sim` from the accompanying `R` package. In order to produce the same result every time the simulation is run we need to set an initial seed. We then choose the number of iterations we want to simulate - for our case study we chose to run 1,000 iterations. There are two inputs to the `open_sim` function, the first is the identifier for each claim in the database of open claims, in this case study that is the `ClNr` field of our `open_claims` database. The next input for the function is the last maturity of the transition matrix which in this case study is 11. 
+
+```{r echo=TRUE, eval=FALSE}
+
+set.seed(14159) #for reproducibility
+my_iters = 1000
+last_mat = 11 #last maturity
+
+results <- lapply(X = open_claims$ClNr, FUN = open_sim, last_mat)
+
+names(results) <- paste0('claim_', open_claims$ClNr)
+
+rm(mtm_selections)
+
+```
+
+After running the simulation we produce a list of each open claim and the 1,000 iterations of the closing states. The following code allows you to view the individual claims and their simulated output. 
+
+##AT - figure out way to show the below code
+
+```{r echo=TRUE, eval=FALSE}
+
+Map(f = head, results[43], 5)
+
+```
+We are looking at the first 5 simulations for claim number 79 which is the 43rd element in the list we created. If we look at the first iteration, we can see the claim stayed open zero at lag 1 and closed zero at lag 2. For the second iteration the claim stayed open until lag 11 switching from open zero to open non-zero at lag 2. Having the ability to view the simulation this closely allows you to drill down into each individual claim which is a resourceful tool when explaining results.
+
+In the next Section we will discuss aplying a severity model to the open claims.

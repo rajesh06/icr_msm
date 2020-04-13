@@ -55,7 +55,8 @@ To allow readers to execute the model that we present, we use synthetic data gen
 ```{r echo=TRUE, eval=FALSE}
 #Not Run
 
-setwd("path.to/Simulation.Machine.V1")
+#setwd("path.to/Simulation.Machine.V1")
+setwd("D:/rajes/Documents/clrs_2020/e-forum/icr_msm/Simulation.Machine.V1")
 # total expected number of claims (over 12 accounting years)
 V <- 500 * 12 
 
@@ -67,7 +68,9 @@ LoB.dist <- c(1, 0, 0, 0) # All claims from the same line
 #in the 12 accident years
 inflation <- c(0.01, 0.01, 0.01, 0.01)   
 
-seed1 <- 100                          # setting seed for simulation
+seed1 <- 123456         # setting seed for simulation 
+                        # use 100 for the train data
+                        # use 123456 for the test data
 
 features <- Feature.Generation(V = V, LoB.dist = LoB.dist, inflation = 
     inflation, seed1 = seed1)
@@ -95,6 +98,7 @@ claims_data <- Simulation.Machine(features = features, npb = npb,
 
 #setwd("path.to/project/data") # you may need to set a working directory
 saveRDS(object = claims_data, file = './data/icr_data.RDS')
+saveRDS(object = claims_data, file = './data/test_data.RDS')
 ```
 
 ## Open Source
