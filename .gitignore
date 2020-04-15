@@ -508,3 +508,4 @@ paper/3.0-Conditional-Severity.html
 *.md
 *.out
 *.md
+.Rproj.user
