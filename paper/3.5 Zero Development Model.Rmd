@@ -7,8 +7,6 @@ z_dev_model <- model_data %>%
 
 z_closing_lags <- unique(z_dev_model$lag_to_close) %>% sort()
 
-par(mfrow = c(4, 3))
-
 z_dev <- lapply(X = z_closing_lags, FUN = function(lag){
   z_dev_model %>% 
     dplyr::filter(lag_to_close == lag) %>% 

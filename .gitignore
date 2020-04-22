@@ -509,3 +509,5 @@ paper/3.0-Conditional-Severity.html
 *.out
 *.md
 .Rproj.user
+*.html
+Simulation.Machine.V1/.Rhistory
