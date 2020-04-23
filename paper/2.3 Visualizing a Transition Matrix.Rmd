@@ -1,10 +1,41 @@
-Visualizing a transition matrix
-Parhaps we think about supplementing the current design with a chart of
-'off-diagonal' movements.
+We can visualize the transition matrices by viewing the percentage of "off-diagonal" movements, or movements between states. For example, a claim going from open zero to closed zero would be considered "off-diagonal" whereas a claim staying in the same state would be considered "on-diagonal". The code below produces a chart of "off-diagonal" movements by lag and starting state.
 
 
-ggplot(markov_data, aes(fill=condition, y=value, x=specie)) + 
-    geom_bar(position="dodge", stat="identity")
+```{r echo=TRUE, eval=FALSE}
+plot_data <- do.call(rbind.data.frame, mtms) #unlist 
 
+plot_data <- plot_data %>%
+  dplyr::mutate(lag = ceiling(row_number()/16)) %>%
+#each lag has 16 elements (4 initial states x 4 ending states)
+  dplyr::mutate(off_diagonal = ifelse(plot_data$from == plot_data$to, "no", "yes")) 
 
+plot_data <- plot_data %>%
+  dplyr::select(-to) %>% #remove variable not needed
+  dplyr::group_by(from, lag, off_diagonal) %>%
+  summarise(n = sum(Freq)) #frequency of off-diagonal movements by lag and starting state
 
+plot_data <- plot_data %>%
+  dplyr::group_by(from, lag) %>%
+  dplyr::mutate(percent = n/sum(n)) %>% #count to %
+  dplyr::filter(off_diagonal == "yes") #only plotting off-diagonal movements
+
+#plot
+my_breaks <- 1:11 #lags 1 through 11
+i <- ggplot(plot_data, aes(fill = from, y = percent, x = lag)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(x = "Lag", y = "Percent Off-Diagonal", fill = "Starting State") +
+  scale_x_continuous(breaks = my_breaks) +  #theme
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(values = c("darkturquoise", "goldenrod2", "gray55", "darkblue")) + 
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank())
+
+plot(i)
+
+rm(i, plot_data, my_breaks)
+
+```
