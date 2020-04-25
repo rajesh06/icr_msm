@@ -386,8 +386,8 @@ zero_mat &lt;- term_mat %&gt;%
 })
 
 mtm_selections[[length(mtm_selections) + 1]] &lt;- term_mat</code></pre>
-<p>The above code generates the transition probabilities based solely on the observations in the data. We will now discuss applying selections to override the transition probabilities generated through the mtm function contained in the <code>R</code> package. There are numerous reasons for wanting to override the observed probabilities, we will discuss a select few of them.</p>
-<p>In many instances, the data used to create the Markov Transition Matrices may sometimes show “re-openings” where a claim goes from a closed state to an open state. When modeling the data you may want to elimnate the probability of a re-opening. For our case study we chose to eliminate claim re-openings and thus set our selections to support this. After viewing the matrices produced below we updated the selections for any occurence of a closed state transitioning to an open state. The selections are updated as follows:</p>
+<p>The above code generates the transition probabilities based solely on the observations in the data. We will now discuss applying selections to override the transition probabilities generated through the mtm function contained in the <code>R</code> package. There are numerous reasons for wanting to override the observed probabilities. In this Section we will discuss a select few.</p>
+<p>In many instances, the data used to create the Markov Transition Matrices may sometimes show “re-openings” where a claim goes from a closed state to an open state. When modeling the data you may want to elimnate the probability of a re-opening. For our case study we chose to remove the probability of claim re-openings and thus set our selections to support this decision. After viewing the matrices produced below we updated the selections for any occurence of a closed state transitioning to an open state. The selections are updated as follows:</p>
 <pre class="r"><code>#Transition 1 - 2
 mtm_selections[[1]] &lt;- update_mtm_selection(mtm_selections[[1]], 
                                             from = &#39;cz&#39;, to = &#39;cz&#39;, selection = 1)
@@ -416,7 +416,7 @@ mtm_selections[[3]] &lt;- update_mtm_selection(mtm_selections[[3]],
                                             from = &#39;cnz&#39;, to = &#39;cnz&#39;, selection = 1)
 mtm_selections[[3]] &lt;- update_mtm_selection(mtm_selections[[3]], 
                                             from = &#39;cnz&#39;, to = &#39;onz&#39;, selection = 0)</code></pre>
-<p>Another example of an instance where you would want to override an observed probability would be to smooth the transitions between lags. Looking at our transition matrices produced below we note that in lag five to six, 60% of oz claims transition to onz and 40% stay at oz. In the next few lags 100% of oz claims stay oz. We have selected to smooth this transition by modifying lags 6-7 and 7-8 as follows:</p>
+<p>Another example of an instance where you would want to override an observed probability would be to smooth the transitions between lags. Looking at our transition matrices produced below we note that in lag five to six, 60% of oz claims transition to onz and 40% stay oz. In the next few lags 100% of oz claims stay oz. We have selected to smooth this transition by modifying lags 6-7 and 7-8 as follows:</p>
 <pre class="r"><code>#Transition 6 - 7
 mtm_selections[[6]] &lt;- update_mtm_selection(mtm_selections[[6]], 
                                             from = &#39;oz&#39;, to = &#39;onz&#39;, selection = .4)
@@ -427,7 +427,7 @@ mtm_selections[[7]] &lt;- update_mtm_selection(mtm_selections[[7]],
                                             from = &#39;oz&#39;, to = &#39;onz&#39;, selection = .2)
 mtm_selections[[7]] &lt;- update_mtm_selection(mtm_selections[[7]], 
                                             from = &#39;oz&#39;, to = &#39;oz&#39;, selection = .8)</code></pre>
-<p>After reviewing our Markov Transition Matrices we also noticed that for lag 1 the synthetic data had a very low probability of either closing with no value or staying open with no value. We wanted to adjust for this and give claims an opportunity to either stay open zero or close zero at this early lag.</p>
+<p>After reviewing our Markov Transition Matrices we also noticed that for lag 1 the synthetic data had a very low probability of either closing with no value or staying open with no value. We wanted to adjust for this and give claims an opportunity to either stay open zero or close zero at this early transition.</p>
 <pre class="r"><code>#Transition 1 - 2
 mtm_selections[[1]] &lt;- update_mtm_selection(mtm_selections[[1]], 
                                             from = &#39;oz&#39;, to = &#39;cz&#39;, selection = .45)

@@ -40,7 +40,7 @@ table(val_2005$AY, val_2005$status)
 
 ```
 
-Section 2.5 discusses using the Markov Transition Matrices created to generate a simulation on all open claims in the modeled data. The end result of this simulation gives us the when and how (with our without value) each open claim is simulated to close.
+Section 4.0 discusses using the Markov Transition Matrices created to generate a simulation on all open claims in the modeled data. The end result of this simulation gives us the when and how (with our without value) each open claim is simulated to close.
 
 To start we need to create our database of open claims. The code below is specifically related to the data we are using, there will be differences in the code depending on the data that is being modeled. The important fields to generate are `mtm_code`, and `mtm_code_with_mat` as these fields will be passed through the functions of the `R` package.
 
@@ -79,19 +79,18 @@ results <- lapply(X = open_claims$ClNr, FUN = open_sim, last_mat)
 
 names(results) <- paste0('claim_', open_claims$ClNr)
 
+results <- mapply(cbind, results, "paid" = open_claims$cum_paid)
+
 rm(mtm_selections)
 
 ```
 
 After running the simulation we produce a list of each open claim and the 1,000 iterations of the closing states. The following code allows you to view the individual claims and their simulated output. 
 
-##AT - figure out way to show the below code
+```{r echo=TRUE, eval=TRUE}
 
-```{r echo=TRUE, eval=FALSE}
-
-Map(f = head, results[43], 5)
+Map(f = head, results[600], 5)
 
 ```
-We are looking at the first 5 simulations for claim number 79 which is the 43rd element in the list we created. If we look at the first iteration, we can see the claim stayed open zero at lag 1 and closed zero at lag 2. For the second iteration the claim stayed open until lag 11 switching from open zero to open non-zero at lag 2. Having the ability to view the simulation this closely allows you to drill down into each individual claim which is a resourceful tool when explaining results.
+We are looking at the first 5 simulations for claim number 5801 which is the 600th element in the list we created. If we look at the first iteration, we can see the claim went to open non zero at lag 1 and eventually closed non zero at lag 7. For the second iteration the claim stayed open zero until lag 3 where it changed to open non zero and eventually closed non zero at lag 6. Having the ability to view the simulation this closely allows you to drill down into each individual claim which is a resourceful tool when explaining results.
 
-In the next Section we will discuss aplying a severity model to the open claims.
