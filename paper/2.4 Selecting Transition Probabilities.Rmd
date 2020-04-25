@@ -110,7 +110,7 @@ As noted above, there are several other reasons for overriding the observed prob
 We visualize the matrices by creating a "for" loop for all of the transitions in the matrix and using the function `plot_mtms` from the accompanying `R` package. The probabilities are visualized using a color gradiant, the darker the blue the higher the probability of the transition.
 
 **AT - having trouble figuring out how to load these matrices, also - do we want to show all or just the ones we change selections for?
-```{r echo=TRUE}
+```{r echo=TRUE, fig.height=3, fig.width=3}
 
 #plot mtms
 for(i in 1:length(mtms)) {
