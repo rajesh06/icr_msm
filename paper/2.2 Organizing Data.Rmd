@@ -20,15 +20,15 @@ For each claim, the synthetic data includes eight features which are listed belo
 * inj_part: Body Part Injured
 * RepDel: Reporting Delay
 
-The synthetic data includes a settlement delay for each individual claim up to a maximum of 11 years. This simulation occurs in fields "Open00" through "Open11" with the value of "1" indicating the claim is open at the corresponding lag and the value of "0" indicating the claim is closed at the corresponding lag. Payments for each lag are also simulated in the fields "Pay00" through "Pay11".  
+The synthetic data includes a settlement delay for each individual claim up to a maximum of 11 years. The "Open00" through "Open11" variables with the value of "1" indicate that the claim is open at the corresponding lag and the value of "0" indicating the claim is closed at the corresponding lag. Payments for each lag are also simulated in the fields "Pay00" through "Pay11".  
 
 To determine the transition matrices we will only need the claim number and the status and value fields ("Open00" through "Open11" and "Pay00 through Pay11"). As discussed in Section 2.1, if you were to further refine the states you could include other fields such as age of the claimant or body part injured and model the settlement lags separately based on those characteristics. 
 
 Now that we have a better understanding of the data we are ready to manipulate the data into a format which will enable us to create the Markov transition matrices. The objective is to transform the data into a database with 12 instances for each claim number (maturities 00 through 11) with indicators for whether the claim is open or closed and whether there is value at each maturity.
 
-We apply the states defined in Section 2.1 to our data (oz, onz, cz, cnz) in the code below.
+We apply the states defined in Section 2.1 to our data (`oz`, `onz`, `cz`, `cnz`) in the code below.
 
-```{r echo=TRUE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 paid_data <- synthetic_data %>%  
   dplyr::select(ClNr:RepDel, dplyr::starts_with('Pay')) %>% #keep IDs and payment amounts
   tidyr::pivot_longer(cols = Pay00:Pay11, names_to = 'paid_as_of', #wide to long
@@ -63,30 +63,14 @@ markov_data <- dplyr::left_join(paid_data, status_data) %>% #join paid and statu
   dplyr::arrange(mc_subject, mat_ymyp1) %>% 
   dplyr::ungroup()
 
-transitions <- unique(markov_data$mat_ymyp1) %>% sort() #define transitions
-transitions <- transitions[1:length(transitions) - 1]
-
-markov_states <- c('oz', 'onz', 'cz', 'cnz') #definte states
+markov_states <- c('oz', 'onz', 'cz', 'cnz') #define states
 
 rm(paid_data, status_data) #cleanup
 
 ```
-The `markov_data` dataframe is now ready to be used to create our Markov transition matrices. We provide the first few rows of this data to allow the reader to understand the final organization.
+The `markov_data` dataframe is now ready to be used to create our Markov transition matrices. We provide the first this data for claim number 36 to allow the reader to understand the final organization. (We selected claim number 36 as it has a reopening in interval 6 and includes several intervals where the claim is open but there are no payments.)
 
 ```{r}
-head(markov_data)
+markov_data %>% 
+  dplyr::filter(ClNr == 36)
 ```
-
-
-Finally, we use the `mtms` function contained in the `R` package accompanying this paper to create an `R` list object containing the incremenatal Markov transition matrices to be used in our simulation. 
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-mtms <- lapply(X = transitions, # all available transitions,
-  mtms)
-```  
-
-We also present the first of the transition matrices below.
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-mtms[[1]] # to show
-```  
-

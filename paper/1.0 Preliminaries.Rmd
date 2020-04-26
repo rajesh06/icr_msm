@@ -2,7 +2,7 @@
 
 ## Motivation and Introductions
 
-The most common actuarial models used to develop unpaid claim estimates require the analysis of claim triangles. The ubiquitous use of triangles is natural as it provides a natural construct to understand the movement of a _portfolio_ of claims. As such, both actuaries and non-actuaries (i.e., stakeholders) find the claim triangle understandable and, as a result, acceptable. 
+Most common actuarial models used to develop unpaid claim amount estimates require the analysis of claim triangles. The ubiquitous use of triangles is natural as it provides an intuitive construct to understand the movement of a _portfolio_ of claims. As such, both actuaries and non-actuaries (i.e., stakeholders) find the claim triangle understandable and, as a result, acceptable. 
 
 However, a claim triangle is "data-expensive." 
 
@@ -14,7 +14,7 @@ However, a claim triangle is "data-expensive."
 
 In this paper, we will propose an approach that utilizes granular frequency and severity information to model ultimate values for claims. This paper should not be read as a research paper as that is not the intent. We do not present this paper as a treatise on all possible approaches for modeling individual claims. Rather, our goal is to present a practical approach (i.e., a recipe) accompanied by an `R` package that readers can use to execute the recipe. 
 
-Consistent with that goal, our intent is to provide a fully reproducible "worked example" with this paper. We also present and open-source the related code to encourage further development of this model. We also try to keep the "words" in the report to a minimum. This is intentional and it will require you to the read the code which will improve your understanding of the model. This is intentional.
+Consistent with that goal, our intent is to provide a fully reproducible "worked example" with this paper. We also present and open source the related code to encourage further development of this model. We also try to keep the "words" in the report to a minimum. This is intentional and it will require you to the read the code which will improve your understanding of the model. 
 
 ## Software
 We use `R` for this analysis; we assume that other code-based languages would also be able to efficiently execute this code. We think it would be difficult - but not impossible - to execute this model in Excel.
@@ -68,9 +68,9 @@ LoB.dist <- c(1, 0, 0, 0) # All claims from the same line
 #in the 12 accident years
 inflation <- c(0.01, 0.01, 0.01, 0.01)   
 
-seed1 <- 123456         # setting seed for simulation 
-                        # use 100 for the train data
-                        # use 123456 for the test data
+# setting seed for simulation 
+seed1 <- 100                    # use 100 for the train data
+#seed1 <- 123456                 # use 123456 for the test data
 
 features <- Feature.Generation(V = V, LoB.dist = LoB.dist, inflation = 
     inflation, seed1 = seed1)
@@ -102,4 +102,4 @@ saveRDS(object = claims_data, file = './data/test_data.RDS')
 ```
 
 ## Open Source
-The files that we use for this paper are available under the Casulaty Actuarial Society's GitHub account.
+The files that we use for this paper are available under the Casualty Actuarial Society's GitHub account.

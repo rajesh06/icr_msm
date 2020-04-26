@@ -23,27 +23,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, child=c('2.2 Organizing Data.Rmd')}
 ```
 
+```{r, child=c('2.3 Developing Matrices of Observed Transitions.Rmd')}
+```
+
 ```{r, child=c('2.4 Selecting Transition Probabilities.Rmd')}
 ```
 
-```{r, child=c('3.1 Prepare and Summarize Data.Rmd')}
+```{r, child=c('3.0 Conditional Severity.Rmd')}
 ```
 
-```{r, child=c('3.2 Severity EDA.Rmd')}
-```
-
-```{r, child=c('3.3 Pr Additional Payment.Rmd')}
-```
-
-```{r, child=c('3.4 Development Model.Rmd')}
-```
-
-```{r, child=c('3.5 Zero Development Model.Rmd')}
-```
-
-```{r, child=c('4.0 Simulation Results.Rmd')}
-```
-
-```{r, child=c('5.0 Conclusions.Rmd')}
+```{r, child=c('3.1 Prepare Data.Rmd')}
 ```
 

@@ -1,4 +1,4 @@
-mtms <- function(start_age){
+create_mtms <- function(start_age){
     #start_age <- 1 #for testing
     
     #maturity interval filter

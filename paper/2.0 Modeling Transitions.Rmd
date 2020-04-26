@@ -1,8 +1,13 @@
 # Modeling Transitions
 
-In Section 2, we will begin our "worked example" by focusing on state transitions for individual claims. Our model will track individual claim movements by age using Markov transition matrices. At the end of Section 2 we will have a model that (probabilistically) addresses the following two questions: 
+In Section 2, we will begin our "worked example" by focusing on state transitions for individual claims. Our model will track individual claim movements by age using Markov transition matrices. At the end of Section 2 we will have a model that (probabilistically) addresses the following questions: 
 
 * When will a claims close?
 * How will each individual claim close (i.e., close zero or close with value)?
 
-This section will be organized in the following sub sections: defining states, organizing data, visualizing a transition matrix, selecting transition probabilities, and creation of final chains of Markov transition Matrices. 
+This section will be organized in the following sub sections: 
+
+* Section 2.1: Defining states
+* Section 2.2: Organizing data
+* Section 2.3: Visualizing a transition matrix
+* Section 2.4: Selecting transition probabilities, and creation of final chains of Markov transition matrices. 

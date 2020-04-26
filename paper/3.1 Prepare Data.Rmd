@@ -1,4 +1,6 @@
-We use a conditional severity model to describe the distribution of claim values conditioned on the age at which the claim closed. We first prepare the data for analysis.
+## Data Preparation
+
+We first prepare the data for analysis.
 
 ```{r Read Data, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -38,10 +40,4 @@ model_data <- dplyr::left_join(paid_data, status_data) %>%  #combine data
 
 rm(paid_data, status_data)
 
-```
-The model data we use includes claims from accident years `r min(model_data$AY)` to `r min(model_data$AY)`.
-
-```{r}
-dplyr::select(model_data, AY, ClNr) %>%  unique() %>% dplyr::pull(AY) %>%  
-  table() %>% barplot(ylab = 'Number of Claims', xlab = 'Accident Year')
 ```

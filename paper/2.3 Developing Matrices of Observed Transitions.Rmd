@@ -1,0 +1,55 @@
+## Developing Matrices of Observed Transitions
+
+We now have the data organized so as to capture movements (i.e., `transitions`) between states. 
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+transitions <- unique(markov_data$mat_ymyp1) %>% sort() #define transitions
+transitions <- transitions[1:length(transitions) - 1]
+transitions
+
+```  
+
+We use the `create_mtms` function contained in the `R` package accompanying this paper to create an `R` list object containing the incremental Markov transition matrices based on our data. 
+
+We also present the first of the transition matrices below.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mtms <- lapply(X = transitions, # all available transitions,
+  create_mtms)
+mtms[[1]] # to show
+```  
+
+In addition to the matrices containing the transitions between lags, we need a terminal matrix. The terminal matrix is is the is the final matrix in our development matrix.  In the terminal matrix, all claims are closed (Pr(closed -> closed) = 1, Pr (open -> closed) = 1). 
+
+```{r echo=TRUE}
+term_mat <- expand.grid(from = markov_states, to = markov_states) %>%
+  dplyr::mutate(n = case_when(
+    from == 'oz' & to == 'cz' ~ 1,
+    from == 'onz' & to == 'cnz' ~ 1,
+    from == 'cz' & to == 'cz' ~ 1,
+    from == 'cnz' & to == 'cnz' ~ 1,
+    TRUE ~ 0
+  ))
+
+zero_mat <- term_mat %>% 
+  dplyr::mutate(n = 0)
+
+```
+
+We now transform these matrices from transition counts to transition probabilities and then add the terminal matrix to the end of the `list`.
+
+```{r echo=TRUE}
+
+mtm_selections <- lapply(mtms, function(mtm){
+
+    mtm_prop <- (mtm %>% prop.table(margin = 1))
+  
+  return(mtm_prop)
+})
+
+mtm_selections[[length(mtm_selections) + 1]] <- term_mat
+
+
+mtms[[1]]
+mtm_selections[[1]]
+
+```

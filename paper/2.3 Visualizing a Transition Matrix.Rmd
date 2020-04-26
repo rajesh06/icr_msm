@@ -1,7 +1,9 @@
-We can visualize the transition matrices by viewing the percentage of "off-diagonal" movements, or movements between states. For example, a claim going from open zero to closed zero would be considered "off-diagonal" whereas a claim staying in the same state would be considered "on-diagonal". The code below produces a chart of "off-diagonal" movements by lag and starting state.
+## Visualizations of the Transition Matrrix
+
+We can visualize the transition matrices by viewing the percentage of "off-diagonal" movements, or movements between states. For example, a claim trasitioning from open zero to closed zero would be considered "off-diagonal" whereas a claim staying in the same state would be considered "on-diagonal". The code below produces a chart of "off-diagonal" movements by lag and starting state.
 
 
-```{r echo=TRUE, eval=FALSE}
+```{r echo=TRUE}
 plot_data <- do.call(rbind.data.frame, mtms) #unlist 
 
 plot_data <- plot_data %>%

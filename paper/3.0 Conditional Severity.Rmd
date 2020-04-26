@@ -1,16 +1,3 @@
-## Conditional Severity Model
+# Conditional Severity Model
 
-```{r, child=c('3.1 Prepare and Summarize Data.Rmd')}
-```
-
-```{r, child=c('3.2 Severity EDA.Rmd')}
-```
-
-```{r, child=c('3.3 Pr Additional Payment.Rmd')}
-```
-
-```{r, child=c('3.4 Development Model.Rmd')}
-```
-
-```{r, child=c('3.5 Zero Development Model.Rmd')}
-```
+We use a conditional severity model to describe the distribution of claim values conditioned on the age at which the claim closed. (That is the severity is conditioned upon when the claim closes relatove to the current evaluations)
