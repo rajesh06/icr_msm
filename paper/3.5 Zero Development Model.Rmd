@@ -1,4 +1,6 @@
-We now prepare the final component of our severity model. This component presents the model for claims valued at $0 which ultimately settle for non-zero value. We review the historical experience for such claims and conclude that a empirical model would be a reasonable choice.
+## Zero Development Model
+
+We now prepare the final component of our severity model. This component presents the model for claims valued at $0 which ultimately settle for non-zero value. We review the historical experience for such claims and conclude that a empirical model would be a reasonable choice. (We present the first four closing lags below.)
 
 ```{r}
 z_dev_model <- model_data %>% 
@@ -11,12 +13,21 @@ z_dev <- lapply(X = z_closing_lags, FUN = function(lag){
   z_dev_model %>% 
     dplyr::filter(lag_to_close == lag) %>% 
     dplyr::pull(ultimate) %>% 
+    log()  
+}) %>% invisible()
+
+severity_model_df$z_dev <- z_dev
+```
+
+```{r echo=FALSE, fig.height=3, fig.width=3}
+lapply(X = 1:4, FUN = function(lag){
+  z_dev_model %>% 
+    dplyr::filter(lag_to_close == lag) %>% 
+    dplyr::pull(ultimate) %>% 
     log() %>% 
     hist(main = paste('closing lag = ', lag), xlab = 'log(settlement value)') 
 }) %>% invisible()
 
-
-severity_model_df$z_dev <- z_dev
-
+rm(sev_model, model_data, z_dev, z_dev_model)
 ```
 

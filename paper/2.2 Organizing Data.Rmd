@@ -65,7 +65,7 @@ markov_data <- dplyr::left_join(paid_data, status_data) %>% #join paid and statu
 
 markov_states <- c('oz', 'onz', 'cz', 'cnz') #define states
 
-rm(paid_data, status_data) #cleanup
+rm(paid_data, status_data, synthetic_data) #cleanup
 
 ```
 The `markov_data` dataframe is now ready to be used to create our Markov transition matrices. We provide the first this data for claim number 36 to allow the reader to understand the final organization. (We selected claim number 36 as it has a reopening in interval 6 and includes several intervals where the claim is open but there are no payments.)

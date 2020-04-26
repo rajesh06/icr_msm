@@ -511,3 +511,4 @@ paper/3.0-Conditional-Severity.html
 .Rproj.user
 *.html
 Simulation.Machine.V1/.Rhistory
+*.RData

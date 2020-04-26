@@ -29,9 +29,9 @@ term_mat <- expand.grid(from = markov_states, to = markov_states) %>%
     from == 'cnz' & to == 'cnz' ~ 1,
     TRUE ~ 0
   ))
+square_term <- xtabs(n ~ from + to, data = term_mat)[c('cnz', 'cz', 'onz', 'oz'), c('cnz', 'cz', 'onz', 'oz')]
 
-zero_mat <- term_mat %>% 
-  dplyr::mutate(n = 0)
+class(square_term) <- "table" 
 
 ```
 
@@ -46,8 +46,8 @@ mtm_selections <- lapply(mtms, function(mtm){
   return(mtm_prop)
 })
 
-mtm_selections[[length(mtm_selections) + 1]] <- term_mat
-
+mtm_selections[[length(mtm_selections) + 1]] <- square_term
+rm(term_mat, square_term)
 
 mtms[[1]]
 mtm_selections[[1]]

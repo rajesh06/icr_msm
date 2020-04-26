@@ -10,4 +10,4 @@ This section will be organized in the following sub sections:
 * Section 2.1: Defining states
 * Section 2.2: Organizing data
 * Section 2.3: Visualizing a transition matrix
-* Section 2.4: Selecting transition probabilities, and creation of final chains of Markov transition matrices. 
+* Section 2.4: Selecting transition probabilities, and creation of Markov transition matrices. 

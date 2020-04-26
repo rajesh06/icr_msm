@@ -35,3 +35,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, child=c('3.1 Prepare Data.Rmd')}
 ```
 
+```{r, child=c('3.2 Severity EDA.Rmd')}
+```
+
+```{r, child=c('3.3 Pr Additional Payment.Rmd')}
+```
+
+```{r, child=c('3.4 Development Model.Rmd')}
+```
+
+```{r, child=c('3.5 Zero Development Model.Rmd')}
+```
+
+```{r, child=c('4.0 Simulation Results.Rmd')}
+```

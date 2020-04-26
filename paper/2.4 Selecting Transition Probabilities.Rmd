@@ -53,3 +53,13 @@ lapply(X = 1:6, FUN = function(x){
 } ) %>% invisible()
 
 ```
+
+Finally, we convert the matrices to have the `markovchain` class.
+
+```{r echo=TRUE}
+#convert the selection matrices to class = Markov Chain
+mtm_selections <- lapply(mtm_selections, function(x){
+  as(object = x, Class = "markovchain")
+})
+rm(markov_data)
+```

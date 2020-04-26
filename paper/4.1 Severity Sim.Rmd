@@ -1,0 +1,97 @@
+```{r functions}
+extract_no_add_pay_rate <- function(df){
+  #df <- test_claim
+  sapply(X = 1:nrow(df), FUN = function(row_no){
+    cum_pd <- df$cum_paid[row_no]
+    car_df <- df$no_add_pay[[row_no]]
+    car_pr <- car_df$no_add_pay_rate[sum(cum_pd > car_df$layer_start)]
+  }, simplify = TRUE) %>% unlist()
+}
+
+sim_sev <- function(cum_paid, lt10_model, gt10_model, z_model) {
+  
+  #cum_paid <- 28133
+  #lt10_model <- test_claim$nz_lt_10[[1]]
+  my_newdata <- data.frame('cum_paid' = cum_paid)
+  my_predicted <- predict.glm(object = lt10_model, newdata = my_newdata)
+  shape <- MASS::gamma.shape(lt10_model)$alpha
+  sim_lt10 <- rgamma(n = 1, shape = shape, rate = shape/my_predicted) %>% exp()
+  
+  #gt10_model <- test_claim$nz_gt_10[[1]]
+  sim_gt10 <- rlnorm(n = 1, meanlog = log(cum_paid), 
+    sdlog = summary(gt10_model)$sigma)
+  
+  #z_model <- test_claim$z_dev[[1]]
+  z_sim <- sample(z_model, size = 1) %>% exp()
+  
+  val_to_return <- dplyr::case_when(
+    cum_paid == 0 ~ z_sim,
+    cum_paid > 0 & cum_paid < exp(10) ~ sim_lt10,
+    cum_paid >= exp(10) ~ sim_gt10)
+  
+  return(val_to_return)
+}
+
+```
+
+```{r message=FALSE, warning=FALSE}
+results <- lapply(X = names(results), FUN = function(claim){
+  
+  df <- results[claim][[1]]  # extract the data fram
+  
+  test_claim <- df %>% 
+    dplyr::select(ClNr, final_state, lag_to_close = settle_lag)%>% 
+    dplyr::left_join(severity_model_df) %>% 
+    dplyr::left_join(dplyr::select(val_2005, ClNr, cum_paid)) %>% 
+    dplyr::mutate(gt10 = cum_paid > exp(10))
+  
+  no_add_pay_rate <- extract_no_add_pay_rate(test_claim)
+  
+  no_add_pay_rate2 <- sapply(X = 1:nrow(test_claim), FUN = function(row_no){
+    never_open <- test_claim$lag_to_close == 0
+    if (never_open) {
+      1
+    } else {
+      no_add_pay_rate[row_no]
+    }
+  }, simplify = TRUE)
+  
+
+  test_claim <- test_claim %>% 
+    dplyr::mutate(no_add_pay_rate = no_add_pay_rate2) %>% 
+    dplyr::mutate(no_add_pay_rv = runif(n = nrow(test_claim))) %>% 
+    dplyr::mutate(no_add_pay = no_add_pay_rv < no_add_pay_rate)
+  
+  sevs <- sapply(X = 1:nrow(test_claim), FUN = function(row_no){
+    
+    if(test_claim$lag_to_close[row_no] > 0) {
+      sim_sev(cum_paid = test_claim$cum_paid[row_no], 
+        lt10_model = test_claim$nz_lt_10[[row_no]],
+        gt10_model = test_claim$nz_gt_10[[row_no]], 
+        z_model = test_claim$z_dev[[row_no]]
+    )} else {
+      test_claim$cum_paid[row_no]
+    }
+    }, 
+  simplify = TRUE)
+  
+  
+  test_claim <- test_claim %>% 
+    dplyr::mutate(sim_sev = sevs) %>% 
+    dplyr::mutate(final_sim_sev = dplyr::case_when(
+    no_add_pay | lag_to_close == 0 ~ cum_paid,
+    TRUE ~ sim_sev
+  ))
+  
+})
+  
+```  
+  
+  
+
+  
+
+    
+  
+  
+

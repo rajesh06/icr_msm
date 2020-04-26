@@ -1,56 +1,58 @@
 ## Exploratory Data Analysis: Severity
-Our synthetic data includes claims values through to settlement. In practice, we would have access to data through a particular valuation date. 
+Our synthetic data includes claims values through to settlement. In practice, we would have access to data through a particular valuation date. (We introduce this data in Section 4.)
 
 * To develop the claims settlement model, we only require a minimum of two valuations. 
-* To develop this severity model, we would need to data that captured all possible severity lags. In practice, we have noted that as the data becomes thinner for later segment lags, we tend group later settlement lags so that we have a sufficient volume of data for our model.
+* To develop this severity model, we would need to data that captured all possible severity lags. In practice, we have noted that as the data becomes thinner for later segment lags, we tend aggregate later settlement lags so that we have a sufficient volume of data for our model.
 
 We delete observations post settlement. These observations are not relevant to our model.
 
 ```{r severity model data}
 sev_model <- model_data %>% 
   dplyr::filter(maturity < closed_at)
-  
+
 ```
 
-We then plot the relationship of settlement values to paid values prior to settlement. In practice, we have observed that use logarithms[^1] of claim values improved the modeling. We create a function to present the exploratory data analysis. (We use a function as we will later test compare to the complete data set.)
+We then plot the relationship of settlement values to paid values prior to settlement. In practice, we have observed that use logarithms[^2] of claim values improved the modeling. We create a function to present the exploratory data analysis. 
 
-[^1]: Note that we use the `log` function in `R` which represents the natural logarithm. Excel uses `ln` to represent the natural logarithm while `log` computes the base 10 logarithm.
+[^2]: Note that we use the `log` function in `R` which represents the natural logarithm. Excel uses `ln` to represent the natural logarithm while `log` computes the base 10 logarithm.
 
 ```{r severity eda}
-severity_eda <- function(df){
+severity_eda <- function(df, closing_lag){
   
-  lapply(X = unique(df$lag_to_close) %>% sort(), FUN = function(closing_lag){
-    #closing_lag <- 1
-    
-    plot_data <- df %>% 
-      dplyr::filter(lag_to_close == closing_lag)
-    
-    plot(x = log(plot_data$cum_paid), xlab = 'log(claims_paid)',
-      y = log(plot_data$ultimate), ylab = 'log(setttelement value)',
-      main = paste('Closing Lag = ', closing_lag))
-    lines(x = plot_data$cum_paid, y = plot_data$cum_paid, col = 'red')
-    
-    legend('bottomright', legend = c('No Additional Payments'), col = 'red',
-      bty = 'n', lty = 'solid')
+  plot_data <- df %>% 
+    dplyr::filter(lag_to_close == closing_lag)
   
-    }) %>% invisible()
+  plot(x = log(plot_data$cum_paid), xlab = 'log(claims_paid)',
+    y = log(plot_data$ultimate), ylab = 'log(setttelement value)',
+    main = paste('Closing Lag = ', closing_lag))
+  lines(x = plot_data$cum_paid, y = plot_data$cum_paid, col = 'red')
+  
+  legend('bottomright', legend = c('No Additional Payments'), col = 'red',  bty = 'n', lty = 'solid', cex = 0.7)
 }
 
-severity_eda(df = sev_model)  #don't print to console
 ```
+We present plots for an "early closing lag" and a "later closing lag" below.
+
+```{r fig.height=4}
+par(mfrow = c(1, 2))
+severity_eda(df = sev_model, closing_lag = 2)
+severity_eda(df = sev_model, closing_lag = 7)    
+
+```
+
+
+
 As the focus of this paper is the approach to individual claims reserving, we won't focus on the severity model itself. Rather, we summarize serveral features of the data that our model will need to address. 
 
 Our initial observation related to this data are as follows:
 
-* There are certain claims that do not result in any additional payment. We included the 45$^\circ$ line on the plots to highlight these claims. 
+* There are claims that do not result in any additional payment. We included the 45$^\circ$ line on the plots to highlight these claims. There are also claims that are not on the 45$^\circ$ line that have additional payments.
 
-  * We also observe that the number of claims with this characteristic decreases as the closing lag increases. This is intuitive.
-  
-  * We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon. We explore this issue first in the next section.
+* We also observe that the number of claims with this characteristic decreases as the closing lag increases. (There are fewer claims on the 45$^\circ$ line.) This is intuitive.
 
-* There are claims that are not on the 45$^\circ$ line that has additional payments.
+* We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon. We explore this issue first in the next section.
 
-* We are aware that there are claims valued at 0 that ultimately closed with payment. As such, we need to include models for each of these potential claim outcomes.
+* We are aware that there are claims valued at 0 that ultimately closed with payment. As such, we need to include models for each of these potential claim outcomes. (These do not appear on the plot.)
 
 For now, we create a data frame that we will use to store each of these component models.
 
@@ -58,6 +60,4 @@ For now, we create a data frame that we will use to store each of these componen
 severity_model_df <- tibble::tibble(
   lag_to_close = unique(sev_model$lag_to_close) %>% sort())
 ```
-
-
 
