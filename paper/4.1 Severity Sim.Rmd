@@ -1,3 +1,6 @@
+The final step is to append the severity values to each data frame
+
+
 ```{r functions}
 extract_no_add_pay_rate <- function(df){
   #df <- test_claim
@@ -34,13 +37,22 @@ sim_sev <- function(cum_paid, lt10_model, gt10_model, z_model) {
 
 ```
 
+In the code below, we follow the following recipe in simulating severity values.
+
+* For each claim, we first retain only those fields that we will need.
+* We then `join` our severity model dataframe. This step adds dataframe columns.
+* Recall that the model for no additional payments required a lookup from a dataframe of empirical values. We use the `extract_no_add_pay_rate` function to perform that lookup. If a closed claim does not reopen, we assign a 100% probability on no new claims. We then then sample from a uniform distribution to model additional payments.
+* We feed the various component models and the paid value into the `sim_sev` function. That function returns the severity value resulting from the applicable severity model. We then only use that value if the claim has simulated as having additional payment.
+
+
 ```{r message=FALSE, warning=FALSE}
+
 results <- lapply(X = names(results), FUN = function(claim){
   
-  df <- results[claim][[1]]  # extract the data fram
+  df <- results[claim][[1]]  # extract the data frame
   
   test_claim <- df %>% 
-    dplyr::select(ClNr, final_state, lag_to_close = settle_lag)%>% 
+    dplyr::select(ClNr, final_state, lag_to_close = settle_lag) %>% 
     dplyr::left_join(severity_model_df) %>% 
     dplyr::left_join(dplyr::select(val_2005, ClNr, cum_paid)) %>% 
     dplyr::mutate(gt10 = cum_paid > exp(10))
@@ -56,7 +68,7 @@ results <- lapply(X = names(results), FUN = function(claim){
     }
   }, simplify = TRUE)
   
-
+  
   test_claim <- test_claim %>% 
     dplyr::mutate(no_add_pay_rate = no_add_pay_rate2) %>% 
     dplyr::mutate(no_add_pay_rv = runif(n = nrow(test_claim))) %>% 
@@ -69,29 +81,77 @@ results <- lapply(X = names(results), FUN = function(claim){
         lt10_model = test_claim$nz_lt_10[[row_no]],
         gt10_model = test_claim$nz_gt_10[[row_no]], 
         z_model = test_claim$z_dev[[row_no]]
-    )} else {
-      test_claim$cum_paid[row_no]
-    }
-    }, 
-  simplify = TRUE)
-  
+      )} else {
+        test_claim$cum_paid[row_no]
+      }
+  }, 
+    simplify = TRUE)
   
   test_claim <- test_claim %>% 
     dplyr::mutate(sim_sev = sevs) %>% 
     dplyr::mutate(final_sim_sev = dplyr::case_when(
-    no_add_pay | lag_to_close == 0 ~ cum_paid,
-    TRUE ~ sim_sev
-  ))
+      no_add_pay | lag_to_close == 0 ~ cum_paid,
+      TRUE ~ sim_sev
+    ))
   
+  return(test_claim)
 })
-  
+
 ```  
-  
-  
 
-  
 
-    
+```{r}
+results_df <- dplyr::bind_rows(results) %>% 
+  dplyr::select(ClNr, cum_paid, final_sim_sev) %>% 
+  dplyr::group_by(ClNr) %>% 
+  dplyr::mutate(iter_no = 1:my_iters)
+```
+
+
+```{r}
+ultimates <- test_data %>% 
+  dplyr::mutate(ultimate = Pay00 + Pay01 + Pay02 + Pay03 + Pay04 + Pay05 +
+    Pay06 +  Pay07 + Pay08 +  Pay09 + Pay10 + Pay11) %>% 
+  dplyr::select(ClNr, ultimate) 
+
+paid_2005 <- test_data_2005 %>% 
+  dplyr::filter(val_year == 2005) %>% 
+  dplyr::select(ClNr, AY, paid_2005 = cum_paid) 
+
+actual <- ultimates %>% 
+  dplyr::left_join(paid_2005) %>% 
+  dplyr::group_by(AY) %>% 
+  summarise(paid_2005 = sum(paid_2005), ultimate = sum(ultimate))
+actual
+
+```
+
+```{r}
+results_df2 <- results_df %>% 
+  dplyr::left_join(dplyr::select(paid_2005, ClNr, AY)) %>% 
+  dplyr::group_by(iter_no, AY) %>% 
+  dplyr::summarise(sim_ult = sum(final_sim_sev))
+results_df2
+
+results_df2 <- results_df %>% 
+  dplyr::left_join(dplyr::select(paid_2005, ClNr, AY)) %>% 
+  dplyr::group_by(AY) %>% 
+  dplyr::summarise(sim_ult = sum(final_sim_sev) / 1000)
+```
+
+```{r}
+lapply(X = 1995:2005, FUN = function(ay){
+  results_df2 %>% 
+    dplyr::filter(AY == ay) %>% 
+    dplyr::pull(sim_ult) %>% 
+    hist(main = ay)
   
-  
+  abline(v = actual$ultimate[actual$AY == ay], col = 'red')
+  abline(v = actual$paid_2005[actual$AY == ay], col = 'blue')
+})
+
+```
+
+
+
 

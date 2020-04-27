@@ -67,7 +67,7 @@ We use the function `open_sim` from the accompanying `R` package. For our case s
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 
 set.seed(14159) #for reproducibility
-my_iters = 10
+my_iters = 100
 last_mat = 12 #last maturity
 
 results <- lapply(X = sim_claims$ClNr, FUN = claims_simulation, last_mat)
