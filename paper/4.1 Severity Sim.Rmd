@@ -3,11 +3,14 @@ The final step is to append the severity values to each data frame
 
 ```{r functions}
 extract_no_add_pay_rate <- function(df){
-  #df <- test_claim
+    #df <- test_claim #testing
   sapply(X = 1:nrow(df), FUN = function(row_no){
-    cum_pd <- df$cum_paid[row_no]
-    car_df <- df$no_add_pay[[row_no]]
+    #row_no <- 9 #testing
+    cum_pd <- df$cum_paid[row_no] #cum_pd
+    car_df <- df$no_add_pay[row_no][[1]] #car_df
     car_pr <- car_df$no_add_pay_rate[sum(cum_pd > car_df$layer_start)]
+    if(is.null(car_pr)) car_pr <- 1
+    return(car_pr)
   }, simplify = TRUE) %>% unlist()
 }
 
@@ -20,9 +23,11 @@ sim_sev <- function(cum_paid, lt10_model, gt10_model, z_model) {
   shape <- MASS::gamma.shape(lt10_model)$alpha
   sim_lt10 <- rgamma(n = 1, shape = shape, rate = shape/my_predicted) %>% exp()
   
-  #gt10_model <- test_claim$nz_gt_10[[1]]
-  sim_gt10 <- rlnorm(n = 1, meanlog = log(cum_paid), 
-    sdlog = summary(gt10_model)$sigma)
+  #gt10_model <- test_claim$nz_gt_10[[13]]
+  my_sd_log <- summary(gt10_model)$sigma
+  if(is.nan(my_sd_log)) my_sd_log <- 0
+  sim_gt10 <- rlnorm(n = 1, meanlog = predict.lm(object = gt10_model, 
+    newdata = my_newdata), sdlog = summary(gt10_model)$sigma)
   
   #z_model <- test_claim$z_dev[[1]]
   z_sim <- sample(z_model, size = 1) %>% exp()
@@ -46,22 +51,26 @@ In the code below, we follow the following recipe in simulating severity values.
 
 
 ```{r message=FALSE, warning=FALSE}
-
+#results <- results_orig
 results <- lapply(X = names(results), FUN = function(claim){
+  
+  #claim <- 'claim_472'
+  #print(claim)
   
   df <- results[claim][[1]]  # extract the data frame
   
   test_claim <- df %>% 
     dplyr::select(ClNr, final_state, lag_to_close = settle_lag) %>% 
     dplyr::left_join(severity_model_df) %>% 
-    dplyr::left_join(dplyr::select(val_2005, ClNr, cum_paid)) %>% 
+    dplyr::left_join(dplyr::select(val_2005, ClNr, AY, cum_paid)) %>% 
     dplyr::mutate(gt10 = cum_paid > exp(10))
   
   no_add_pay_rate <- extract_no_add_pay_rate(test_claim)
   
   no_add_pay_rate2 <- sapply(X = 1:nrow(test_claim), FUN = function(row_no){
+    #row_no <- 9
     never_open <- test_claim$lag_to_close == 0
-    if (never_open) {
+    if (never_open[row_no]) {
       1
     } else {
       no_add_pay_rate[row_no]
@@ -75,8 +84,10 @@ results <- lapply(X = names(results), FUN = function(claim){
     dplyr::mutate(no_add_pay = no_add_pay_rv < no_add_pay_rate)
   
   sevs <- sapply(X = 1:nrow(test_claim), FUN = function(row_no){
-    
+    #row_no <- 88
+    #print(row_no)
     if(test_claim$lag_to_close[row_no] > 0) {
+      
       sim_sev(cum_paid = test_claim$cum_paid[row_no], 
         lt10_model = test_claim$nz_lt_10[[row_no]],
         gt10_model = test_claim$nz_gt_10[[row_no]], 
@@ -86,6 +97,8 @@ results <- lapply(X = names(results), FUN = function(claim){
       }
   }, 
     simplify = TRUE)
+  
+  sevs <- pmax(test_claim$cum_paid, sevs)
   
   test_claim <- test_claim %>% 
     dplyr::mutate(sim_sev = sevs) %>% 
@@ -102,7 +115,7 @@ results <- lapply(X = names(results), FUN = function(claim){
 
 ```{r}
 results_df <- dplyr::bind_rows(results) %>% 
-  dplyr::select(ClNr, cum_paid, final_sim_sev) %>% 
+  dplyr::select(ClNr, AY, cum_paid, final_sim_sev) %>% 
   dplyr::group_by(ClNr) %>% 
   dplyr::mutate(iter_no = 1:my_iters)
 ```
@@ -141,8 +154,10 @@ results_df2 <- results_df %>%
 
 ```{r}
 lapply(X = 1995:2005, FUN = function(ay){
-  results_df2 %>% 
+  results_df %>% 
     dplyr::filter(AY == ay) %>% 
+    dplyr::group_by(iter_no) %>% 
+    dplyr::summarise(sim_ult = sum(final_sim_sev)) %>% 
     dplyr::pull(sim_ult) %>% 
     hist(main = ay)
   
