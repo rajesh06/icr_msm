@@ -30,13 +30,13 @@ mtm_selections[[7]] <- update_mtm_selection(mtm_selections[[7]],
 ```{r echo=TRUE}
 #Transition 1 - 2
 mtm_selections[[1]] <- update_mtm_selection(mtm_selections[[1]], 
-  from = 'oz', to = 'cz', selection = .3)
+  from = 'oz', to = 'cz', selection = 0.02)
 mtm_selections[[1]] <- update_mtm_selection(mtm_selections[[1]], 
-  from = 'oz', to = 'cnz', selection = .1)
+  from = 'oz', to = 'cnz', selection = 0.82)
 mtm_selections[[1]] <- update_mtm_selection(mtm_selections[[1]], 
-  from = 'oz', to = 'oz', selection = .5)
+  from = 'oz', to = 'oz', selection = 0.04)
 mtm_selections[[1]] <- update_mtm_selection(mtm_selections[[1]], 
-  from = 'oz', to = 'onz', selection = .1)
+  from = 'oz', to = 'onz', selection = .12)
 
 ```                                           
                                             

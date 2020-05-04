@@ -49,3 +49,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, child=c('4.0 Simulation Results.Rmd')}
 ```
+
+```{r, child=c('4.1 Severity Sim.Rmd')}
+```

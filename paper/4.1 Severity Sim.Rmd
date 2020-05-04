@@ -16,9 +16,8 @@ extract_no_add_pay_rate <- function(df){
 
 sim_sev <- function(cum_paid, lt10_model, gt10_model, z_model) {
   
-  #cum_paid <- 28133
-  #lt10_model <- test_claim$nz_lt_10[[1]]
   my_newdata <- data.frame('cum_paid' = cum_paid)
+  
   my_predicted <- predict.glm(object = lt10_model, newdata = my_newdata)
   shape <- MASS::gamma.shape(lt10_model)$alpha
   sim_lt10 <- rgamma(n = 1, shape = shape, rate = shape/my_predicted) %>% exp()
@@ -51,119 +50,156 @@ In the code below, we follow the following recipe in simulating severity values.
 
 
 ```{r message=FALSE, warning=FALSE}
-#results <- results_orig
-results <- lapply(X = names(results), FUN = function(claim){
+#Attach Severity Model
+full_sim_model <- lapply(X = state_sims, FUN = function(settle_sim) {
   
-  #claim <- 'claim_472'
-  #print(claim)
+  cum_paid <- settle_sim$cum_paid
   
-  df <- results[claim][[1]]  # extract the data frame
-  
-  test_claim <- df %>% 
-    dplyr::select(ClNr, final_state, lag_to_close = settle_lag) %>% 
-    dplyr::left_join(severity_model_df) %>% 
-    dplyr::left_join(dplyr::select(val_2005, ClNr, AY, cum_paid)) %>% 
-    dplyr::mutate(gt10 = cum_paid > exp(10))
-  
-  no_add_pay_rate <- extract_no_add_pay_rate(test_claim)
-  
-  no_add_pay_rate2 <- sapply(X = 1:nrow(test_claim), FUN = function(row_no){
-    #row_no <- 9
-    never_open <- test_claim$lag_to_close == 0
-    if (never_open[row_no]) {
-      1
-    } else {
-      no_add_pay_rate[row_no]
-    }
-  }, simplify = TRUE)
+  settle_sim$full_sim <- settle_sim$settle_lag %>% 
+    dplyr::rename(lag_to_close = settle_lag) %>% 
+    dplyr::left_join(severity_model_df)
   
   
-  test_claim <- test_claim %>% 
-    dplyr::mutate(no_add_pay_rate = no_add_pay_rate2) %>% 
-    dplyr::mutate(no_add_pay_rv = runif(n = nrow(test_claim))) %>% 
-    dplyr::mutate(no_add_pay = no_add_pay_rv < no_add_pay_rate)
+  return(settle_sim)
   
-  sevs <- sapply(X = 1:nrow(test_claim), FUN = function(row_no){
-    #row_no <- 88
-    #print(row_no)
-    if(test_claim$lag_to_close[row_no] > 0) {
-      
-      sim_sev(cum_paid = test_claim$cum_paid[row_no], 
-        lt10_model = test_claim$nz_lt_10[[row_no]],
-        gt10_model = test_claim$nz_gt_10[[row_no]], 
-        z_model = test_claim$z_dev[[row_no]]
-      )} else {
-        test_claim$cum_paid[row_no]
-      }
-  }, 
-    simplify = TRUE)
-  
-  sevs <- pmax(test_claim$cum_paid, sevs)
-  
-  test_claim <- test_claim %>% 
-    dplyr::mutate(sim_sev = sevs) %>% 
-    dplyr::mutate(final_sim_sev = dplyr::case_when(
-      no_add_pay | lag_to_close == 0 ~ cum_paid,
-      TRUE ~ sim_sev
-    ))
-  
-  return(test_claim)
-})
+}) 
 
+
+#Add the no pay probabilities
+
+
+full_sim_model <- lapply(X = full_sim_model, FUN = function(claim){
+  
+  cum_paid <- claim$cum_paid
+  my_df <- claim$full_sim
+  
+  no_add_pays <- sapply(X = 1:nrow(my_df), FUN = function(row_no){
+    
+    lag_to_close <- my_df$lag_to_close[row_no]
+    
+    no_add_pay <- if(lag_to_close != 0) {
+      car_df <-  my_df$no_add_pay[[row_no]]
+      car_df$no_add_pay_rate[sum(cum_paid >= car_df$layer_start)]
+    } else {
+      1
+    }
+    
+    
+  }, simplify = TRUE) 
+  
+  my_df$no_add_pay_pr <- no_add_pays
+  my_df$add_pay_sim <- runif(n = my_iters)
+  my_df$add_pay <- my_df$add_pay_sim > my_df$no_add_pay_pr
+  
+  
+  claim$full_sim <- my_df
+  
+  return(claim)
+  
+}) %>% invisible()
+
+# Now the severity values
+
+full_sim_model <- lapply(X = full_sim_model, FUN = function(claim){
+  
+  cum_paid <- claim$cum_paid
+  my_df <- claim$full_sim
+  my_newdata <- data.frame('cum_paid' = cum_paid)
+ 
+  ultimates <- sapply(X = 1:nrow(my_df), FUN = function(row_no){
+    
+    if(my_df$add_pay[[row_no]]) {
+      
+      #less than exp(10)
+      lt10_mod <- my_df$nz_lt_10[[row_no]]
+      my_predicted <- predict.glm(object = lt10_mod, newdata = my_newdata)
+      shape <- MASS::gamma.shape(lt10_mod)$alpha
+      ult_lt10 <- rgamma(n = 1, shape = shape, rate = shape/my_predicted) %>% exp()
+      
+      #greater than exp(10)
+      gt10_mod <- my_df$nz_gt_10[[row_no]]
+      my_sd_log <- summary(gt10_mod)$sigma
+      if(is.nan(my_sd_log)) my_sd_log <- 0
+      ult_gt10 <- rlnorm(n = 1, meanlog = predict.lm(object = gt10_mod, 
+        newdata = my_newdata), sdlog = my_sd_log)
+      
+      #zeros
+      
+      ult_z <- sample(my_df$z_dev[[row_no]], size = 1) %>% exp()
+      
+      dplyr::case_when(
+        exp(cum_paid) > 10 ~ ult_gt10,
+        cum_paid == 0 ~ ult_z,
+        exp(cum_paid) <= 10 ~ ult_gt10,
+      )
+      
+      
+    } else {
+      return(cum_paid)
+    }
+    
+    
+  }, simplify = TRUE) 
+  
+  my_df$ultimate <- pmax(cum_paid, ultimates)
+  
+  claim$full_sim <- my_df
+  
+  return(claim)
+  
+    
+}) %>% invisible()
 ```  
 
 
-```{r}
-results_df <- dplyr::bind_rows(results) %>% 
-  dplyr::select(ClNr, AY, cum_paid, final_sim_sev) %>% 
-  dplyr::group_by(ClNr) %>% 
-  dplyr::mutate(iter_no = 1:my_iters)
+```{r warning=FALSE}
+results_list <- lapply(X = full_sim_model, function(x) x$full_sim)
+results_df <- dplyr::bind_rows(results_list) %>% 
+  dplyr::select(iteration, ClNr, AY, cum_paid, ultimate) 
 ```
 
 
 ```{r}
-ultimates <- test_data %>% 
-  dplyr::mutate(ultimate = Pay00 + Pay01 + Pay02 + Pay03 + Pay04 + Pay05 +
-    Pay06 +  Pay07 + Pay08 +  Pay09 + Pay10 + Pay11) %>% 
-  dplyr::select(ClNr, ultimate) 
 
-paid_2005 <- test_data_2005 %>% 
-  dplyr::filter(val_year == 2005) %>% 
-  dplyr::select(ClNr, AY, paid_2005 = cum_paid) 
-
-actual <- ultimates %>% 
-  dplyr::left_join(paid_2005) %>% 
+actual <- dplyr::left_join(
+  #Paid at 2005
+  test_data %>% 
+  dplyr::filter(maturity == 12) %>%
+  dplyr::select(ClNr, AY, ultimate = cum_paid),
+  
+  #Ultimate
+  test_data %>% 
+  dplyr::filter(cal_year == 2005) %>% 
+  dplyr::select(ClNr, AY, paid_2005 = cum_paid)
+  ) %>% 
   dplyr::group_by(AY) %>% 
-  summarise(paid_2005 = sum(paid_2005), ultimate = sum(ultimate))
+  dplyr::summarise(paid_2005 = sum(paid_2005), ultimate = sum(ultimate), 
+    count = n()) %>% 
+  dplyr::mutate(avg_sev = ultimate / count)
+
 actual
 
 ```
 
 ```{r}
-results_df2 <- results_df %>% 
-  dplyr::left_join(dplyr::select(paid_2005, ClNr, AY)) %>% 
-  dplyr::group_by(iter_no, AY) %>% 
-  dplyr::summarise(sim_ult = sum(final_sim_sev))
-results_df2
-
-results_df2 <- results_df %>% 
-  dplyr::left_join(dplyr::select(paid_2005, ClNr, AY)) %>% 
+model_result <- results_df %>% 
   dplyr::group_by(AY) %>% 
-  dplyr::summarise(sim_ult = sum(final_sim_sev) / 1000)
+  dplyr::summarise(sim_ult = sum(ultimate) / 10)
 ```
 
-```{r}
+```{r fig.height=3, fig.width=3}
+
 lapply(X = 1995:2005, FUN = function(ay){
   results_df %>% 
     dplyr::filter(AY == ay) %>% 
-    dplyr::group_by(iter_no) %>% 
-    dplyr::summarise(sim_ult = sum(final_sim_sev)) %>% 
+    dplyr::group_by(iteration) %>% 
+    dplyr::summarise(sim_ult = sum(ultimate)) %>% 
     dplyr::pull(sim_ult) %>% 
     hist(main = ay)
   
   abline(v = actual$ultimate[actual$AY == ay], col = 'red')
   abline(v = actual$paid_2005[actual$AY == ay], col = 'blue')
-})
+}) %>% invisible()
 
 ```
 
