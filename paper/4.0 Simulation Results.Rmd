@@ -1,8 +1,8 @@
 # Applying the Model
 
-We now have all the component models to develop our estimates. We start by generating generating test data. We use the same approach as we used to generate the model used to parameterize the model with the exception of the simulation seed.
+We now have all the component models to develop our estimates. We start by generating test data. We use the same approach as we used to generate the model used to parameterize the model with the exception of the simulation seed.
 
-We then "cutoff" the data so that we only have information trough a particular valuation date. (We use the same code that we presented in Section 2.2 except to applying an additional filter to exclude any observations valued after year-end 2005).
+We then "cutoff" the data so that we only have information through a particular valuation date. (We use the same code presented in Section 2.2 except to applying an additional filter to exclude any observations valued after year-end 2005).
 
 ```{r echo=FALSE}
 #test_data <- readRDS(file = './data/icr_data.RDS')
@@ -36,8 +36,6 @@ test_data <- dplyr::left_join(
     mutate(last_open = max(status_year)) %>% 
     dplyr::select(-status_year)
 )
-
-
 ```
 We present the familiar data triangle below.
 ```{r triangle}
@@ -66,13 +64,11 @@ settle_sim_test <- test_data %>%
     status == 0 & cum_paid > 0 ~ "cnz",)) %>% #assign mtm_code
   dplyr::mutate(
     mtm_code_with_mat = paste(mtm_code, maturity, sep = '_'))
-
 ```
 
 We use the function `open_sim` from the accompanying `R` package. For our case study we run 100 iterations (to keep computing time reasonable) for each claim. There are two inputs to the `open_sim` function, the first is the identifier for each claim in the database of open claims, in this case study that is the `ClNr` field of our `open_claims` database. The next input for the function is the last maturity of the transition matrix which in this case study is 12. 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-
 set.seed(14159) #for reproducibility
 my_iters = 100
 last_mat = 12 #last maturity
@@ -82,18 +78,7 @@ names(state_sims) <- paste0('claim_', sim_claims$ClNr)
 
 rm(last_mat, sim_claims)
 #rm(mtm_selections)
-
 ```
 
-After running the simulation we produce a `list` of each open claim and the 1,000 iterations of the closing states. The following code allows you to view the individual claims and their simulated output. 
-
-
-We are looking at the first 5 simulations for claim number 5801 which is the 600th element in the list we created. If we look at the first iteration, we can see the claim went to open non zero at lag 1 and eventually closed non zero at lag 7. For the second iteration the claim stayed open zero until lag 3 where it changed to open non zero and eventually closed non zero at lag 6. Having the ability to view the simulation this closely allows you to drill down into each individual claim which is a resourceful tool when explaining results.
-
-```{r}
-#state_sims$claim_5489[1:20,]
-#results_orig <- results
-
-```
-
+After running the simulation we produce a `list` of each open claim and the 100 iterations of the closing states. Having the ability to view the simulation this closely allows you to drill down into each individual claim which is a resourceful tool when explaining results.
 

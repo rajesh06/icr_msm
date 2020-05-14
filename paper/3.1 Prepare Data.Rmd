@@ -3,8 +3,6 @@
 We first prepare the data for analysis.
 
 ```{r Read Data, message=FALSE, warning=FALSE}
-library(tidyverse)
-
 paid_data <- readRDS(file = './data/icr_data.RDS') %>%  #read the data
   dplyr::select(ClNr:RepDel, dplyr::starts_with('Pay')) %>% #keep IDs and payment amounts
   tidyr::pivot_longer(cols = Pay00:Pay11, names_to = 'paid_as_of', #wide to long
@@ -20,17 +18,17 @@ status_data <- readRDS(file = './data/icr_data.RDS') %>%  #read the data
     pattern = '[0-9]{2}'))
 
 model_data <- dplyr::left_join(paid_data, status_data) %>%  #combine data
-  dplyr::select(-paid_as_of, -status_as_of) %>% # drop variables not needed
-  dplyr::mutate(maturity = as.numeric(maturity) + 1) %>% # calculate maturity
+  dplyr::select(-paid_as_of, -status_as_of) %>% #drop variables not needed
+  dplyr::mutate(maturity = as.numeric(maturity) + 1) %>% #calculate maturity
   dplyr::arrange(ClNr, maturity) %>% 
-  dplyr::mutate(last_open = maturity * status) %>% #This in an intermediate step
+  dplyr::mutate(last_open = maturity * status) %>% #this in an intermediate step
   dplyr::group_by(ClNr) %>% 
   dplyr::mutate(ultimate = sum(paid)) %>% 
   dplyr::filter(ultimate > 0) %>% 
   dplyr::mutate(closed_at = max(last_open) + 1) %>% 
   dplyr::mutate(cum_paid = cumsum(paid)) %>% 
   dplyr::select(-AQ, -cc, -inj_part, -LoB, -last_open, -age) %>% 
-    #Drop unnecessary variables
+    #drop unnecessary variables
       #AQ is the quarter of claims occurrence
       #cc is the claims code
       #inj_part is the body part injured 

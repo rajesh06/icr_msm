@@ -1,6 +1,6 @@
 ## Zero Development Model
 
-We now prepare the final component of our severity model. This component presents the model for claims valued at $0 which ultimately settle for non-zero value. We review the historical experience for such claims and conclude that a empirical model would be a reasonable choice. (We present the first four closing lags below.)
+We now prepare the final component of our severity model. This component presents the model for claims valued at $0 which ultimately settle for non-zero value. We review the historical experience for such claims and conclude that an empirical model would be a reasonable choice. (We present the first four closing lags below.)
 
 ```{r}
 z_dev_model <- model_data %>% 

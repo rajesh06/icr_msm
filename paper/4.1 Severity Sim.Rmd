@@ -1,6 +1,5 @@
 The final step is to append the severity values to each data frame
 
-
 ```{r functions}
 extract_no_add_pay_rate <- function(df){
     #df <- test_claim #testing
@@ -45,12 +44,12 @@ In the code below, we follow the following recipe in simulating severity values.
 
 * For each claim, we first retain only those fields that we will need.
 * We then `join` our severity model dataframe. This step adds dataframe columns.
-* Recall that the model for no additional payments required a lookup from a dataframe of empirical values. We use the `extract_no_add_pay_rate` function to perform that lookup. If a closed claim does not reopen, we assign a 100% probability on no new claims. We then then sample from a uniform distribution to model additional payments.
+* Recall that the model for no additional payments required a lookup from a dataframe of empirical values. We use the `extract_no_add_pay_rate` function to perform that lookup. If a closed claim does not reopen, we assign a 100% probability on no new claims. We then sample from a uniform distribution to model additional payments.
 * We feed the various component models and the paid value into the `sim_sev` function. That function returns the severity value resulting from the applicable severity model. We then only use that value if the claim has simulated as having additional payment.
 
 
 ```{r message=FALSE, warning=FALSE}
-#Attach Severity Model
+#attach Severity Model
 full_sim_model <- lapply(X = state_sims, FUN = function(settle_sim) {
   
   cum_paid <- settle_sim$cum_paid
@@ -65,7 +64,7 @@ full_sim_model <- lapply(X = state_sims, FUN = function(settle_sim) {
 }) 
 
 
-#Add the no pay probabilities
+#add the no pay probabilities
 
 
 full_sim_model <- lapply(X = full_sim_model, FUN = function(claim){
@@ -98,7 +97,7 @@ full_sim_model <- lapply(X = full_sim_model, FUN = function(claim){
   
 }) %>% invisible()
 
-# Now the severity values
+#now the severity values
 
 full_sim_model <- lapply(X = full_sim_model, FUN = function(claim){
   
@@ -160,14 +159,13 @@ results_df <- dplyr::bind_rows(results_list) %>%
 
 
 ```{r}
-
 actual <- dplyr::left_join(
-  #Paid at 2005
+  #paid at 2005
   test_data %>% 
   dplyr::filter(maturity == 12) %>%
   dplyr::select(ClNr, AY, ultimate = cum_paid),
   
-  #Ultimate
+  #ultimate
   test_data %>% 
   dplyr::filter(cal_year == 2005) %>% 
   dplyr::select(ClNr, AY, paid_2005 = cum_paid)
@@ -178,7 +176,6 @@ actual <- dplyr::left_join(
   dplyr::mutate(avg_sev = ultimate / count)
 
 actual
-
 ```
 
 ```{r}
@@ -188,7 +185,6 @@ model_result <- results_df %>%
 ```
 
 ```{r fig.height=3, fig.width=3}
-
 lapply(X = 1995:2005, FUN = function(ay){
   results_df %>% 
     dplyr::filter(AY == ay) %>% 
@@ -200,7 +196,6 @@ lapply(X = 1995:2005, FUN = function(ay){
   abline(v = actual$ultimate[actual$AY == ay], col = 'red')
   abline(v = actual$paid_2005[actual$AY == ay], col = 'blue')
 }) %>% invisible()
-
 ```
 
 

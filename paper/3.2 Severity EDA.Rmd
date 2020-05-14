@@ -1,8 +1,8 @@
 ## Exploratory Data Analysis: Severity
-Our synthetic data includes claims values through to settlement. In practice, we would have access to data through a particular valuation date. (We introduce this data in Section 4.)
+Our synthetic data includes claim values through to settlement. In practice, we would have access to data through a particular valuation date. (We introduce this data in Section 4.)
 
 * To develop the claims settlement model, we only require a minimum of two valuations. 
-* To develop this severity model, we would need to data that captured all possible severity lags. In practice, we have noted that as the data becomes thinner for later segment lags, we tend aggregate later settlement lags so that we have a sufficient volume of data for our model.
+* To develop this severity model, we would need data that captured all possible severity lags. In practice, we have noted that as the data becomes thinner for later segment lags, we tend to aggregate later settlement lags so that we have a sufficient volume of data for our model.
 
 We delete observations post settlement. These observations are not relevant to our model.
 
@@ -12,7 +12,7 @@ sev_model <- model_data %>%
 
 ```
 
-We then plot the relationship of settlement values to paid values prior to settlement. In practice, we have observed that use logarithms[^2] of claim values improved the modeling. We create a function to present the exploratory data analysis. 
+We then plot the relationship of settlement values to paid values prior to settlement. In practice, we have observed that using logarithms[^2] of claim values improved the modeling. We create a function to present the exploratory data analysis. 
 
 [^2]: Note that we use the `log` function in `R` which represents the natural logarithm. Excel uses `ln` to represent the natural logarithm while `log` computes the base 10 logarithm.
 
@@ -48,9 +48,9 @@ Our initial observation related to this data are as follows:
 
 * There are claims that do not result in any additional payment. We included the 45$^\circ$ line on the plots to highlight these claims. There are also claims that are not on the 45$^\circ$ line that have additional payments.
 
-* We also observe that the number of claims with this characteristic decreases as the closing lag increases. (There are fewer claims on the 45$^\circ$ line.) This is intuitive.
+* We observe that the number of claims with this characteristic decreases as the closing lag increases. (There are fewer claims on the 45$^\circ$ line.) This is intuitive.
 
-* We also note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observation in that region or a true predictive phenomenon. We explore this issue first in the next section.
+* We note that it's possible that the likelihood of no further payments may be a function of the payments to date. That is, we may observe there are more 'off-the-line' points in the central region of the x-axis. However, we are not certain as to whether that's due to there simply being more observations in that region or a true predictive phenomenon. We explore this issue first in the next section.
 
 * We are aware that there are claims valued at 0 that ultimately closed with payment. As such, we need to include models for each of these potential claim outcomes. (These do not appear on the plot.)
 

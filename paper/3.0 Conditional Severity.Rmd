@@ -1,3 +1,3 @@
 # Conditional Severity Model
 
-We use a conditional severity model to describe the distribution of claim values conditioned on the age at which the claim closed. (That is the severity is conditioned upon when the claim closes relatove to the current evaluations)
+We use a conditional severity model to describe the distribution of claim values conditioned on the age at which the claim closed. (That is, the severity is conditioned upon when the claim closes relative to the current evaluations).

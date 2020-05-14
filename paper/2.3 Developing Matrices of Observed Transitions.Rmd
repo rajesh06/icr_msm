@@ -13,9 +13,9 @@ We use the `create_mtms` function contained in the `R` package accompanying this
 
 We also present the first of the transition matrices below.
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-mtms <- lapply(X = transitions, # all available transitions,
+mtms <- lapply(X = transitions, #all available transitions,
   create_mtms)
-mtms[[1]] # to show
+mtms[[1]] #to show
 ```  
 
 In addition to the matrices containing the transitions between lags, we need a terminal matrix. The terminal matrix is is the is the final matrix in our development matrix.  In the terminal matrix, all claims are closed (Pr(closed -> closed) = 1, Pr (open -> closed) = 1). 

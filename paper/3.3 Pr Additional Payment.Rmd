@@ -1,6 +1,6 @@
 ## Claims Closing without Additional Payment
 
-We first plot the percentage of claims that do not result in additional payment. We divide each closing lag into deciles and plot the rates. Note that the definition of decile is unique to each closing lag. As such, the lines are do not directly comparable. However, we note a general pattern of high rates for small claims and larger claims. The outlying closing lags (1, 2, 9, 10, 11, and 12) display unusual behavior. We are not overly concerned about the late lag patterns as it will be unusual for a claim to simulate as closing in those late lags. 
+We first plot the percentage of claims that do not result in additional payment. We divide each closing lag into deciles and plot the rates. Note that the definition of decile is unique to each closing lag. As such, the lines are not directly comparable. However, we note a general pattern of high rates for small claims and larger claims. The outlying closing lags (1, 2, 9, 10, 11, and 12) display unusual behavior. We are not overly concerned about the late lag patterns as it will be unusual for a claim to simulate as closing in those late lags. 
 
 ```{r Additional Payments}
 
@@ -18,7 +18,7 @@ closed_at_current <- lapply(X = severity_model_df$lag_to_close,
         layer_start = min(cum_paid)) %>% 
       dplyr::ungroup()
     
-    plot(x = 1:10, # deciles
+    plot(x = 1:10, #deciles
       y = 1:10 * 0.10 - 0.05, 
       ylim = c(0,1), type = 'n', ylab = "Addional Payment Rate", 
       main = paste('Closing Lag = ', closing_lag) )
@@ -30,7 +30,7 @@ closed_at_current <- lapply(X = severity_model_df$lag_to_close,
   }) %>% invisible()
 
 ```
-The patterns are relatively smooth but don't appear lend themselves to a parametric model. As a result, we elect to rely on an empirical model.
+The patterns are relatively smooth but don't appear to lend themselves to a parametric model. As a result, we elect to rely on an empirical model.
 
 ```{r}
 severity_model_df <- severity_model_df %>% 
